@@ -3,10 +3,12 @@ package com.tfgbe.modelo.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.tfgbe.modelo.entities.Table;
 import com.tfgbe.modelo.repository.TableRepository;
 
+@Service
 public class TableServiceImplJpaMy8 implements TableService {
 	
 	@Autowired
