@@ -29,8 +29,14 @@ public class UserServiceImplJpaMy8 implements UserService{
 
 	@Override
 	public User insertOne(User entidad) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			entidad.setIdUser(0);
+			return userRepository.save(entidad);
+		}catch(Exception e) {
+			System.out.println("ERROR : " + e.getMessage());
+			return null;
+		}
+		
 	}
 
 
