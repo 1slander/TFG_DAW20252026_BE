@@ -17,9 +17,9 @@ public class UserServiceImplJpaMy8 implements UserService{
 	
 	@Override
 	public User findById(Integer atributoId) {
-		// TODO Auto-generated method stub
-		return null;
+		return userRepository.findById(atributoId).orElse(null);
 	}
+
 
 	@Override
 	public List<User> findAll() {
@@ -27,11 +27,13 @@ public class UserServiceImplJpaMy8 implements UserService{
 		return null;
 	}
 
+
 	@Override
 	public User insertOne(User entidad) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 
 	@Override
 	public User updateOne(User entidad) {
@@ -39,10 +41,13 @@ public class UserServiceImplJpaMy8 implements UserService{
 		return null;
 	}
 
+
 	@Override
 	public int deleteOne(Integer atributoId) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
+
+
 
 }
