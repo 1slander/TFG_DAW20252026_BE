@@ -10,8 +10,7 @@ import lombok.AllArgsConstructor;
 @Data 
 @NoArgsConstructor 
 @AllArgsConstructor 
-@Entity 
-@Table(name = "RESTAURANTS") // Mapea a la tabla RESTAURANTS en la base de datos
+@Entity (name="RESTAURANTS")
 public class Restaurant {
 
     // PK: Mapea a VARCHAR(255). No usamos @GeneratedValue ya que es un String.
