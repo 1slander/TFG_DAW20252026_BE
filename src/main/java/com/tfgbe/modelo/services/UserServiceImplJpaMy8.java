@@ -1,7 +1,7 @@
 package com.tfgbe.modelo.services;
 
 import java.util.List;
-
+import com.tfgbe.restcontroller.UserRestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,9 +10,16 @@ import com.tfgbe.modelo.repository.UserRepository;
 
 @Service
 public class UserServiceImplJpaMy8 implements UserService{
+
+    private final UserRestController userRestController;
 	
 	@Autowired
 	UserRepository userRepository;
+
+
+    UserServiceImplJpaMy8(UserRestController userRestController) {
+        this.userRestController = userRestController;
+    }
 	
 	
 	@Override
@@ -42,8 +49,10 @@ public class UserServiceImplJpaMy8 implements UserService{
 
 	@Override
 	public User updateOne(User entidad) {
-		// TODO Auto-generated method stub
-		return null;
+		if (userRepository.existsById(entidad.getIdUser())) {
+			return userRepository.save(entidad);
+		}else
+			return null;
 	}
 
 

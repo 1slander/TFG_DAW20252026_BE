@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,6 +49,15 @@ public class UserRestController {
 			return new ResponseEntity<User>(user, HttpStatus.OK);
 		}else {
 			return new ResponseEntity<String>("INSERT ERROR", HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@PutMapping("/update/{id}")
+	public ResponseEntity<?> updateOne(@PathVariable User user){
+		if (userService.updateOne(user)!= null) {
+			return new ResponseEntity<User>(user, HttpStatus.OK);
+		}else {
+			return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
 		}
 	}
 	
