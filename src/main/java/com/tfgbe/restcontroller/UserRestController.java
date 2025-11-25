@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,6 +59,18 @@ public class UserRestController {
 			return new ResponseEntity<User>(user, HttpStatus.OK);
 		}else {
 			return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	@DeleteMapping("/delete/{id}")
+	public ResponseEntity<?> deleteOne(@PathVariable int id){
+		switch (userService.deleteOne(id)) {
+		case 1:
+			return new ResponseEntity<String>("DELETED", HttpStatus.OK);
+		case 0:
+			return new ResponseEntity<String>("NOT FOUND", HttpStatus.NOT_FOUND);
+		default:
+			return new ResponseEntity<String>("CAN'T DELETE", HttpStatus.BAD_REQUEST);
 		}
 	}
 	

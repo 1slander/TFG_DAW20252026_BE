@@ -58,7 +58,15 @@ public class UserServiceImplJpaMy8 implements UserService{
 
 	@Override
 	public int deleteOne(Integer atributoId) {
-		// TODO Auto-generated method stub
+		if (userRepository.existsById(atributoId)) {
+			try {
+				userRepository.deleteById(atributoId);
+				return 1;
+			}catch (Exception e) {
+				System.out.println("ERROR : " + e.getMessage());
+				return -1;
+			}
+		}
 		return 0;
 	}
 
