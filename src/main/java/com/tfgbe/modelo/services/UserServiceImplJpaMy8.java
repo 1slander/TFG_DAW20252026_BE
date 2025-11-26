@@ -11,16 +11,10 @@ import com.tfgbe.modelo.repository.UserRepository;
 @Service
 public class UserServiceImplJpaMy8 implements UserService{
 
-    private final UserRestController userRestController;
 	
 	@Autowired
 	UserRepository userRepository;
 
-
-    UserServiceImplJpaMy8(UserRestController userRestController) {
-        this.userRestController = userRestController;
-    }
-	
 	
 	@Override
 	public User findById(Integer atributoId) {
