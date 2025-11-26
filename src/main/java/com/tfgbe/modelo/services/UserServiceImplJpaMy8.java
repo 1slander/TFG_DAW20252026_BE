@@ -1,7 +1,7 @@
 package com.tfgbe.modelo.services;
 
 import java.util.List;
-
+import com.tfgbe.restcontroller.UserRestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,39 +10,60 @@ import com.tfgbe.modelo.repository.UserRepository;
 
 @Service
 public class UserServiceImplJpaMy8 implements UserService{
+
 	
 	@Autowired
 	UserRepository userRepository;
-	
+
 	
 	@Override
 	public User findById(Integer atributoId) {
-		// TODO Auto-generated method stub
-		return null;
+		return userRepository.findById(atributoId).orElse(null);
 	}
+
 
 	@Override
 	public List<User> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		return userRepository.findAll();
 	}
+
 
 	@Override
 	public User insertOne(User entidad) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			entidad.setIdUser(0);
+			return userRepository.save(entidad);
+		}catch(Exception e) {
+			System.out.println("ERROR : " + e.getMessage());
+			return null;
+		}
+		
 	}
+
 
 	@Override
 	public User updateOne(User entidad) {
-		// TODO Auto-generated method stub
-		return null;
+		if (userRepository.existsById(entidad.getIdUser())) {
+			return userRepository.save(entidad);
+		}else
+			return null;
 	}
+
 
 	@Override
 	public int deleteOne(Integer atributoId) {
-		// TODO Auto-generated method stub
+		if (userRepository.existsById(atributoId)) {
+			try {
+				userRepository.deleteById(atributoId);
+				return 1;
+			}catch (Exception e) {
+				System.out.println("ERROR : " + e.getMessage());
+				return -1;
+			}
+		}
 		return 0;
 	}
+
+
 
 }

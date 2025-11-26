@@ -3,10 +3,12 @@ package com.tfgbe.modelo.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.tfgbe.modelo.entities.Restaurant;
 import com.tfgbe.modelo.repository.RestaurantRepository;
 
+@Service
 public class RestaurantServiceImpl implements RestaurantService{
 	
 	@Autowired
