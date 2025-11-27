@@ -4,10 +4,10 @@ import java.util.List;
 
 public interface ICrudGenerico<E,ID> {
 	
-	E findById(ID atributoId);
+	E findById(ID key);
     List<E> findAll();
-    E insertOne(E entidad);
-    E updateOne(E entidad);
-    int deleteOne(ID atributoId);
+    E insertOne(E entity);
+    E updateOne(E entity);
+    int deleteOne(ID key);
 
 }

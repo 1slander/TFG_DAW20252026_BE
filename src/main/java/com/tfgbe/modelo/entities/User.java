@@ -26,22 +26,24 @@ public class User {
 	@Column(name="id_user")
 	private int idUser;
 	
-	@Column(name="user_name")
-	private String userName;
+	@Column(name="first_name")
+	private String firstName;
 	
-	private String surname;
+	@Column(name="last_name")
+	private String lastName;
 	
 	private String email;
 	
 	private String password;
 	
-	@Column(name="contracted_date")
-	private LocalDate contractedDate;
+	@Column(name="is_active")
+	private boolean isActive;
+
+	@Column(name="created_at")
+	private LocalDate createdAt;
 	
-	private boolean active;
 	
-	@Column(name="employee_type")
-	private String employeeType;
+	@Column(name="updated_at")
+	private String updatedAt;
 	
-	private Role role;
 }
