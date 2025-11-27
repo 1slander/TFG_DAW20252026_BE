@@ -23,7 +23,7 @@ public class Shift {
 	@Id
 	@Column(name="id_shift")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	public int idUser;
+	public int idShift;
 	
 	@Column(name="assing_shift")
 	public String assignShift;
