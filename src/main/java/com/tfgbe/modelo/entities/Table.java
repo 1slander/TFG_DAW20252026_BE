@@ -35,12 +35,10 @@ public class Table {
 	
 	
 	@ManyToOne
-	@JoinColumn(name="id_restaurant")
-	private Restaurant idRestaurant;
+	@JoinColumn(name="id_restaurant", nullable = false)
+	private Restaurant restaurant;
 	
 	@Enumerated(EnumType.STRING)
 	private Status status;
 	
-	
-
 }
