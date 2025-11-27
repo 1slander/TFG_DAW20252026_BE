@@ -54,7 +54,7 @@ public class UserRestController {
 	}
 	
 	@PutMapping("/update/{id}")
-	public ResponseEntity<?> updateOne(@PathVariable User user){
+	public ResponseEntity<?> updateOne(@RequestBody User user){
 		if (userService.updateOne(user)!= null) {
 			return new ResponseEntity<User>(user, HttpStatus.OK);
 		}else {
