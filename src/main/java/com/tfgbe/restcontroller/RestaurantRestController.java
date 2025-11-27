@@ -27,13 +27,13 @@ public class RestaurantRestController {
 	private RestaurantService restaurantService;
 	
 	@GetMapping("/")
-	public ResponseEntity<List<Restaurant>> todos(){
+	public ResponseEntity<List<Restaurant>> findAll(){
 		return ResponseEntity.status(200).body(restaurantService.findAll());
 		
 	}
 	
 	@GetMapping("/{idRestaurant}")
-    public ResponseEntity<Restaurant> uno(@PathVariable String idRestaurant){
+    public ResponseEntity<Restaurant> findById(@PathVariable String idRestaurant){
         
         Restaurant restaurant = restaurantService.findById(idRestaurant);
         
@@ -45,22 +45,21 @@ public class RestaurantRestController {
     }
 	
 	@PostMapping("/")
-    public ResponseEntity<Restaurant> insert(@RequestBody Restaurant restaurant){
+    public ResponseEntity<Restaurant> insertOne(@RequestBody Restaurant restaurant){
         
-        // El servicio se encarga de guardar y devolver la instancia con el ID generado (si fuera necesario)
-        Restaurant nuevoRestaurante = restaurantService.insertOne(restaurant);
+        Restaurant newRestaurant = restaurantService.insertOne(restaurant);
         
-        if (nuevoRestaurante != null) {
-             return ResponseEntity.status(201).body(nuevoRestaurante); // 201 Created
+        if (newRestaurant != null) {
+             return ResponseEntity.status(201).body(newRestaurant); 
         }
-        return ResponseEntity.status(400).body(null); // 400 Bad Request o algún error
+        return ResponseEntity.status(400).body(null); 
     }
 	
 	@PutMapping("/{idRestaurant}")
-    public ResponseEntity<?> update(@PathVariable String idRestaurant,
+    public ResponseEntity<?> updateOne(@PathVariable String idRestaurant,
                                      @RequestBody Restaurant restaurant){
         
-        restaurant.setIdRestaurant(idRestaurant); // Asegura que el ID de la URL sea el que se actualiza
+        restaurant.setIdRestaurant(idRestaurant); 
         
         if ( restaurantService.updateOne(restaurant) != null) {
             return ResponseEntity.status(200).body(restaurant); // 200 OK
@@ -70,7 +69,7 @@ public class RestaurantRestController {
     }
 	
 	@DeleteMapping("/{idRestaurant}")
-    public ResponseEntity<String> delete(@PathVariable String idRestaurant){
+    public ResponseEntity<String> deleteOne(@PathVariable String idRestaurant){
         
         switch(restaurantService.deleteOne(idRestaurant)) {
         case 1:

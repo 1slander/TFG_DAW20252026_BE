@@ -16,8 +16,8 @@ public class RestaurantServiceImpl implements RestaurantService{
 	
 	
 	@Override
-	public Restaurant findById(String atributoId) {
-		return restaurantRepository.findById(atributoId).orElse(null);
+	public Restaurant findById(String key) {
+		return restaurantRepository.findById(key).orElse(null);
 	}
 
 	@Override
@@ -26,24 +26,24 @@ public class RestaurantServiceImpl implements RestaurantService{
 	}
 
 	@Override
-	public Restaurant insertOne(Restaurant entidad) {
+	public Restaurant insertOne(Restaurant entity) {
 		
-		return restaurantRepository.save(entidad);
+		return restaurantRepository.save(entity);
 	}
 
 	@Override
-	public Restaurant updateOne(Restaurant entidad) {
-		if (restaurantRepository.existsById(entidad.getIdRestaurant()))
-			return restaurantRepository.save(entidad);
+	public Restaurant updateOne(Restaurant entity) {
+		if (restaurantRepository.existsById(entity.getIdRestaurant()))
+			return restaurantRepository.save(entity);
 		else
 			return null;
 	}
 
 	@Override
-	public int deleteOne(String atributoId) {
-		if(restaurantRepository.existsById(atributoId)) {
+	public int deleteOne(String key) {
+		if(restaurantRepository.existsById(key)) {
 			try {
-				restaurantRepository.deleteById(atributoId);
+				restaurantRepository.deleteById(key);
 				return 1;
 			}catch(Exception e) {
 				return -1;
