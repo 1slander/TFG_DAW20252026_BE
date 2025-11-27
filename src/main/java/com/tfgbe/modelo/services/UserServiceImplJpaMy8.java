@@ -31,7 +31,6 @@ public class UserServiceImplJpaMy8 implements UserService{
 	@Override
 	public User insertOne(User entity) {
 		try {
-			entity.setIdUser(0);
 			return userRepository.save(entity);
 		}catch(Exception e) {
 			System.out.println("ERROR : " + e.getMessage());

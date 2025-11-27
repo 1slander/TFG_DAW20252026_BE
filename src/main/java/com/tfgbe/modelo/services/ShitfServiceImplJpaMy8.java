@@ -27,7 +27,6 @@ public class ShitfServiceImplJpaMy8 implements ShiftService{
 	@Override
 	public Shift insertOne(Shift entity) {
 		try {
-			entity.setIdShift(0);
 			return shiftRepository.save(entity);
 		}catch(Exception e) {
 			System.out.println("ERROR : " + e.getMessage());
