@@ -29,7 +29,8 @@ public class Restaurant {
     private String address;    
     private String country;    
     private String phone;
-    private Integer table_capacity;
+    private Integer capacity;
+    private Integer totalTables;
  
     
     // Relación One-to-Many: Un restaurante tiene muchas mesas (Opcional, pero recomendado)

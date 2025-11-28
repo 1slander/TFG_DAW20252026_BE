@@ -23,12 +23,14 @@ public class AdminRestController {
 	@Autowired
 	AdminService adminService;
 	
-	@GetMapping("/all")
+	// Aqui tendriamos que decidir si queremos que se vean o no
+	@GetMapping
 	public List<Admin> findAll(){
 		return adminService.findAll();
 	}
 	
-	@PostMapping("/insert")
+	
+	@PostMapping
 	public ResponseEntity<?> insertOne(@RequestBody Admin admin){
 		  if (adminService.updateOne(admin)!= null) {
 			  return new ResponseEntity<Admin>(admin,HttpStatus.OK);

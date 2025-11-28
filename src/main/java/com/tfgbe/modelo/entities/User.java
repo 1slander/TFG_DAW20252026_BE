@@ -7,19 +7,24 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @Entity
 @Table(name="users")
-public class User { //ABSTRACT?
+// Tenemos que añadir la anotacion para especificar que nos haga un join por herencia
+@Inheritance(strategy=InheritanceType.JOINED)
+public abstract class User { 
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,6 +49,6 @@ public class User { //ABSTRACT?
 	
 	
 	@Column(name="updated_at")
-	private String updatedAt;
+	private LocalDate updatedAt;
 	
 }

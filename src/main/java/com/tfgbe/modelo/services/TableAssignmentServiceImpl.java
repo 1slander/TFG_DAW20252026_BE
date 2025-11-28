@@ -3,10 +3,13 @@ package com.tfgbe.modelo.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.tfgbe.modelo.entities.TableAssignment;
 
 import com.tfgbe.modelo.repository.TableAssignmentRepository;
+
+@Service
 
 public class TableAssignmentServiceImpl implements TableAssignmentService{
 	
