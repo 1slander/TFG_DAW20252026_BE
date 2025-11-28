@@ -2,6 +2,8 @@ package com.tfgbe.modelo.entities;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
@@ -34,6 +36,7 @@ public class Admin extends User {
 	
 	//NO SE SI LO HEMOS HECHO
 	// Aqui si un Admin tiene muchos restaurante tiene que ser una Lista
-	@OneToMany
+	@OneToMany(mappedBy="admin")
+	@JsonIgnore
 	private List<Restaurant> restaurants;
 }

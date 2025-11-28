@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tfgbe.modelo.entities.Restaurant;
 import com.tfgbe.modelo.entities.Shift;
 import com.tfgbe.modelo.services.ShiftService;
 
@@ -26,10 +27,10 @@ public class ShiftRestController {
 	ShiftService shiftService;
 	
 	@GetMapping("/all")
-	public List<Shift> findAll(){
-		return shiftService.findAll();
+	public ResponseEntity<List<Shift>> findAll(){
+		return ResponseEntity.status(200).body(shiftService.findAll());
+		
 	}
-	
 	
 	@GetMapping("/byId/{id}")
 	public ResponseEntity<?> findById(@PathVariable int id){

@@ -8,6 +8,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 
 @Getter
@@ -31,7 +33,10 @@ public class Restaurant {
     private String phone;
     private Integer capacity;
     private Integer totalTables;
- 
+    
+    @ManyToOne
+    @JoinColumn(name = "ID_USER")
+    private Admin admin;
     
     // Relación One-to-Many: Un restaurante tiene muchas mesas (Opcional, pero recomendado)
     // @OneToMany(mappedBy = "restaurant")

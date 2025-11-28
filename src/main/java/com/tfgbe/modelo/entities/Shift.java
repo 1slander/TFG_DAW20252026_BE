@@ -25,6 +25,6 @@ public class Shift {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public int idShift;
 	
-	@Column(name="assing_shift")
+	@Column(name="assign_shift")
 	public String assignShift;
 }

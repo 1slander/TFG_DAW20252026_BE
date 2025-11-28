@@ -1,0 +1,51 @@
+INSERT INTO users (FIRST_NAME, LAST_NAME, EMAIL, PASSWORD, IS_ACTIVE) VALUES 
+('Alvaro','Postigo', 'alavaro@gmail.com', 'alvaro1234', TRUE);
+INSERT INTO restaurants VALUES
+('C12312532',1,'Casa Paco','Avenida Don Paco','España','671705088','40','10');
+
+INSERT INTO tables (TABLE_NUMBER, TABLE_CAPACITY, STATUS,ID_RESTAURANT) VALUES 
+(1, 4, 'NOT_BOOKED', 'C12312532');
+
+INSERT INTO admins values 
+(1,'C12312532',TRUE);
+
+INSERT INTO shifts (ID_SHIFT, ASSIGN_SHIFT)
+VALUES (1, 'Turno de Tarde');
+
+INSERT INTO employees (ID_USER,ID_RESTAURANT,ID_SHIFT,ID_EMPLOYEE,HOURLY_WAGE,HIRE_DATE) values 
+(2,'C12312532',1,'77173866C',9.65,'2018-05-23');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

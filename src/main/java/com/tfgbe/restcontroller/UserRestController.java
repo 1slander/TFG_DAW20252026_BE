@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tfgbe.modelo.entities.Shift;
 import com.tfgbe.modelo.entities.User;
 import com.tfgbe.modelo.services.UserService;
 
@@ -29,8 +30,9 @@ public class UserRestController {
 
 	
 	@GetMapping("/all")
-	public List<User> findAll(){
-		return userService.findAll();
+	public ResponseEntity<List<User>> findAll(){
+		return ResponseEntity.status(200).body(userService.findAll());
+		
 	}
 	
 	@GetMapping("/byId/{id}")
