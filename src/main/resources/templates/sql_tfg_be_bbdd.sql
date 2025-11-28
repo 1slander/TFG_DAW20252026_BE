@@ -1,10 +1,7 @@
 CREATE DATABASE `tfg_be_bbdd`;
 USE `tfg_be_bbdd`;
 
--- --------------------------------------------------------
--- 1. USERS TABLE (ADMIN, EMPLOYEE)
--- --------------------------------------------------------
-
+-- 1. USERS
 CREATE TABLE USERS ( 
     ID_USER INT auto_increment PRIMARY KEY,
     FIRST_NAME VARCHAR(100) NOT NULL,
@@ -16,10 +13,7 @@ CREATE TABLE USERS (
     UPDATED_AT DATETIME
 );
 
--- --------------------------------------------------------
--- 2. RESTAURANT TABLE (Menu)
--- --------------------------------------------------------
-
+-- 2. RESTAURANTS
 CREATE TABLE RESTAURANTS (
     ID_RESTAURANT VARCHAR(255) PRIMARY KEY,
     RESTAURANT_NAME VARCHAR(255) NOT NULL,
@@ -30,11 +24,13 @@ CREATE TABLE RESTAURANTS (
     TOTAL_TABLES INT
 );
 
+-- 3. SHIFTS (MOVER AQUÍ)
+CREATE TABLE SHIFTS (
+	ID_SHIFT INT auto_increment PRIMARY KEY,
+    ASSIGN_SHIFT VARCHAR(255)
+);
 
--- --------------------------------------------------------
--- 3. EMPLOYEES TABLE (Menu)
--- --------------------------------------------------------
-
+-- 4. EMPLOYEES
 CREATE TABLE EMPLOYEES (
 	ID_USER INT PRIMARY KEY,
     ID_RESTAURANT VARCHAR(255) NULL,
@@ -44,41 +40,22 @@ CREATE TABLE EMPLOYEES (
     HOURLY_WAGE DOUBLE,
     HIRE_DATE DATE,
     
-    FOREIGN KEY (ID_USER) REFERENCES USERS(ID_USER)
-    ON DELETE CASCADE,
-    FOREIGN KEY (ID_RESTAURANT) REFERENCES RESTAURANTS(ID_RESTAURANT)
-    ON DELETE SET NULL,
+    FOREIGN KEY (ID_USER) REFERENCES USERS(ID_USER) ON DELETE CASCADE,
+    FOREIGN KEY (ID_RESTAURANT) REFERENCES RESTAURANTS(ID_RESTAURANT) ON DELETE SET NULL,
     FOREIGN KEY (ID_SHIFT) REFERENCES SHIFTS(ID_SHIFT)
-    
-);
--- --------------------------------------------------------
--- 4. SHIFTS TABLE (Menu)
--- --------------------------------------------------------
-
-CREATE TABLE SHIFTS (
-	ID_SHIFT INT auto_increment PRIMARY KEY,
-    ASSIGN_SHIFT VARCHAR(255)
 );
 
--- --------------------------------------------------------
--- 5. ADMINS TABLE (Menu)
--- --------------------------------------------------------
-
+-- 5. ADMINS
 CREATE TABLE ADMINS (
 	ID_USER INT PRIMARY KEY,
 	ID_RESTAURANT VARCHAR(255) NULL,
     CAN_CREATE_ADMINS BOOLEAN,
     
-    FOREIGN KEY (ID_USER) REFERENCES USERS(ID_USER)
-    ON DELETE CASCADE,
-    FOREIGN KEY (ID_RESTAURANT) REFERENCES RESTAURANTS(ID_RESTAURANT)
-    ON DELETE SET NULL
+    FOREIGN KEY (ID_USER) REFERENCES USERS(ID_USER) ON DELETE CASCADE,
+    FOREIGN KEY (ID_RESTAURANT) REFERENCES RESTAURANTS(ID_RESTAURANT) ON DELETE SET NULL
 );
 
--- --------------------------------------------------------
--- 6. TABLES TABLE
--- --------------------------------------------------------
-
+-- 6. TABLES
 CREATE TABLE TABLES (
     ID_TABLE INT AUTO_INCREMENT PRIMARY KEY,
     TABLE_NUMBER INT NOT NULL,
@@ -88,10 +65,7 @@ CREATE TABLE TABLES (
     FOREIGN KEY (ID_RESTAURANT) REFERENCES RESTAURANTS(ID_RESTAURANT)
 );
 
--- --------------------------------------------------------
--- 7. TABLA ASIGNACION_EMPLEADO (Gestión de turnos/mesas)
--- --------------------------------------------------------
-
+-- 7. TABLE_ASSIGNMENT
 CREATE TABLE TABLE_ASSIGNMENT (
     ID_ASSIGMENT INT AUTO_INCREMENT PRIMARY KEY,
     ID_TABLE INT NOT NULL,
@@ -100,4 +74,5 @@ CREATE TABLE TABLE_ASSIGNMENT (
     END_TIME DATETIME,
     FOREIGN KEY (ID_TABLE) REFERENCES TABLES(ID_TABLE),
     FOREIGN KEY (ID_EMPLOYEE) REFERENCES EMPLOYEES(ID_USER)
+);
 );
