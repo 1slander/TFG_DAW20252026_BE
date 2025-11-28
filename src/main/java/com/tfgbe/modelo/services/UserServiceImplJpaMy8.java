@@ -17,8 +17,8 @@ public class UserServiceImplJpaMy8 implements UserService{
 
 	
 	@Override
-	public User findById(Integer atributoId) {
-		return userRepository.findById(atributoId).orElse(null);
+	public User findById(Integer key) {
+		return userRepository.findById(key).orElse(null);
 	}
 
 
@@ -29,10 +29,9 @@ public class UserServiceImplJpaMy8 implements UserService{
 
 
 	@Override
-	public User insertOne(User entidad) {
+	public User insertOne(User entity) {
 		try {
-			entidad.setIdUser(0);
-			return userRepository.save(entidad);
+			return userRepository.save(entity);
 		}catch(Exception e) {
 			System.out.println("ERROR : " + e.getMessage());
 			return null;
@@ -42,19 +41,19 @@ public class UserServiceImplJpaMy8 implements UserService{
 
 
 	@Override
-	public User updateOne(User entidad) {
-		if (userRepository.existsById(entidad.getIdUser())) {
-			return userRepository.save(entidad);
+	public User updateOne(User entity) {
+		if (userRepository.existsById(entity.getIdUser())) {
+			return userRepository.save(entity);
 		}else
 			return null;
 	}
 
 
 	@Override
-	public int deleteOne(Integer atributoId) {
-		if (userRepository.existsById(atributoId)) {
+	public int deleteOne(Integer key) {
+		if (userRepository.existsById(key)) {
 			try {
-				userRepository.deleteById(atributoId);
+				userRepository.deleteById(key);
 				return 1;
 			}catch (Exception e) {
 				System.out.println("ERROR : " + e.getMessage());

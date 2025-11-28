@@ -15,56 +15,56 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tfgbe.modelo.entities.User;
-import com.tfgbe.modelo.services.UserService;
-
-
+import com.tfgbe.modelo.entities.Shift;
+import com.tfgbe.modelo.services.ShiftService;
 
 @RestController
-@RequestMapping("/user")
-public class UserRestController {
-	
-	@Autowired
-	UserService userService;
+@RequestMapping("/shift")
+public class ShiftRestController {
 
+	@Autowired
+	ShiftService shiftService;
 	
 	@GetMapping("/all")
-	public List<User> findAll(){
-		return userService.findAll();
+	public List<Shift> findAll(){
+		return shiftService.findAll();
 	}
+	
 	
 	@GetMapping("/byId/{id}")
 	public ResponseEntity<?> findById(@PathVariable int id){
-		User u = userService.findById(id);
-		if(u!=null) {
-			return new ResponseEntity<User>(u,HttpStatus.OK);
-		}else {
-			return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
+		Shift s = shiftService.findById(id);
+		if (s != null) {
+			return new ResponseEntity<Shift>(s,HttpStatus.OK);
+		} else {
+			return new ResponseEntity<String>("SHIFT NOT FOUND", HttpStatus.NOT_FOUND);
 		}
 	}
 	
 	
 	@PostMapping("/insert")
-	public ResponseEntity<?> insertOne(@RequestBody User user){
-		if (userService.insertOne(user)!=null) {
-			return new ResponseEntity<User>(user, HttpStatus.OK);
+	public ResponseEntity<?> insertOne(@RequestBody Shift shift){
+		if (shiftService.insertOne(shift)!=null) {
+			return new ResponseEntity<Shift>(shift, HttpStatus.OK);
 		}else {
 			return new ResponseEntity<String>("INSERT ERROR", HttpStatus.BAD_REQUEST);
 		}
 	}
 	
-	@PutMapping("/update/{id}")
-	public ResponseEntity<?> updateOne(@RequestBody User user){
-		if (userService.updateOne(user)!= null) {
-			return new ResponseEntity<User>(user, HttpStatus.OK);
+	
+	@PutMapping("/update")
+	public ResponseEntity<?> updateOne(@RequestBody Shift shift){
+		if(shiftService.updateOne(shift)!= null) {
+			return new ResponseEntity<Shift>(shift,HttpStatus.OK);
 		}else {
-			return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<String>("INSERT ERROR", HttpStatus.BAD_REQUEST);
 		}
 	}
 	
+	
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<?> deleteOne(@PathVariable int id){
-		switch (userService.deleteOne(id)) {
+		switch (shiftService.deleteOne(id)) {
 		case 1:
 			return new ResponseEntity<String>("DELETED", HttpStatus.OK);
 		case 0:
@@ -73,6 +73,10 @@ public class UserRestController {
 			return new ResponseEntity<String>("CAN'T DELETE", HttpStatus.BAD_REQUEST);
 		}
 	}
+	
+	
+	
+	
 	
 	
 	

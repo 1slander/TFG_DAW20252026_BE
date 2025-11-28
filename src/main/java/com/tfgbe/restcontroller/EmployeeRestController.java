@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,56 +14,52 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tfgbe.modelo.entities.User;
-import com.tfgbe.modelo.services.UserService;
-
-
+import com.tfgbe.modelo.entities.Employee;
+import com.tfgbe.modelo.services.EmployeeService;
 
 @RestController
-@RequestMapping("/user")
-public class UserRestController {
-	
-	@Autowired
-	UserService userService;
+@RequestMapping("/employee")
+public class EmployeeRestController {
 
+	@Autowired
+	EmployeeService employeeService;
 	
 	@GetMapping("/all")
-	public List<User> findAll(){
-		return userService.findAll();
+	public List<Employee> findAll(){
+		return employeeService.findAll();
 	}
 	
 	@GetMapping("/byId/{id}")
-	public ResponseEntity<?> findById(@PathVariable int id){
-		User u = userService.findById(id);
-		if(u!=null) {
-			return new ResponseEntity<User>(u,HttpStatus.OK);
+	public ResponseEntity<?> findById(@PathVariable String id){
+		Employee e = employeeService.findById(id);
+		if (e!= null) {
+			return new ResponseEntity<Employee>(e,HttpStatus.OK);
 		}else {
 			return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
 		}
 	}
 	
-	
 	@PostMapping("/insert")
-	public ResponseEntity<?> insertOne(@RequestBody User user){
-		if (userService.insertOne(user)!=null) {
-			return new ResponseEntity<User>(user, HttpStatus.OK);
+	public ResponseEntity<?> insertOne(@RequestBody Employee employee){
+		if (employeeService.insertOne(employee)!= null) {
+			return new ResponseEntity<Employee>(employee, HttpStatus.OK);
 		}else {
 			return new ResponseEntity<String>("INSERT ERROR", HttpStatus.BAD_REQUEST);
 		}
 	}
 	
 	@PutMapping("/update/{id}")
-	public ResponseEntity<?> updateOne(@RequestBody User user){
-		if (userService.updateOne(user)!= null) {
-			return new ResponseEntity<User>(user, HttpStatus.OK);
+	public ResponseEntity<?> updateOne(@RequestBody Employee employee){
+		if (employeeService.updateOne(employee)!= null) {
+			return new ResponseEntity<Employee>(employee, HttpStatus.OK);
 		}else {
 			return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
 		}
 	}
 	
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<?> deleteOne(@PathVariable int id){
-		switch (userService.deleteOne(id)) {
+	public ResponseEntity<?> deleteOne(@PathVariable String id){
+		switch (employeeService.deleteOne(id)) {
 		case 1:
 			return new ResponseEntity<String>("DELETED", HttpStatus.OK);
 		case 0:
@@ -73,6 +68,10 @@ public class UserRestController {
 			return new ResponseEntity<String>("CAN'T DELETE", HttpStatus.BAD_REQUEST);
 		}
 	}
+	
+	
+	
+	
 	
 	
 	
