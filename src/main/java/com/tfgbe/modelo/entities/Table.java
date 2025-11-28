@@ -31,7 +31,8 @@ public class Table {
 	@Column(name="table_number")
 	private int tableNumber;
 	
-	private int capacity;
+	@Column(name="table_capacity")
+	private int tableCapacity;
 	
 	
 	@ManyToOne

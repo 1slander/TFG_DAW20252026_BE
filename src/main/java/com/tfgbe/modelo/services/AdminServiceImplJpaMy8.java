@@ -38,7 +38,7 @@ public class AdminServiceImplJpaMy8 implements AdminService{
 
 	@Override
 	public Admin updateOne(Admin entity) {
-		if (adminRepository.existsById(entity.getUser().getIdUser())) {
+		if (adminRepository.existsById(entity.getIdUser())) {
 			return adminRepository.save(entity);
 		}else
 			return null;

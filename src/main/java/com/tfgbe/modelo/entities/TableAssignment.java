@@ -9,18 +9,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import com.tfgbe.modelo.entities.Table;
 
 @Getter
 @Data 
 @NoArgsConstructor 
 @AllArgsConstructor 
-@Entity
-@Table(name = "table_assignment")
+@Entity(name = "table_assignment")
+
 public class TableAssignment {
 	
 	@Id
