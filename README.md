@@ -1,1 +1,15 @@
 # TFG_DAW20252026_BE
+
+## BBDD Properties:
+
+server.port=8087
+
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.url=jdbc:mysql://localhost:3306/tfg_be_bbdd?serverTimeZone=UTC
+spring.datasource.username=
+spring.datasource.password=
+
+spring.jpa.generate-ddl=false
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
