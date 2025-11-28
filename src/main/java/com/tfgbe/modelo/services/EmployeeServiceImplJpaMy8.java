@@ -15,7 +15,7 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService{
 	EmployeeRepository employeeRepository;
 
 	@Override
-	public Employee findById(String key) {
+	public Employee findById(Integer key) {
 		return employeeRepository.findById(key).orElse(null);
 	}
 
@@ -36,14 +36,14 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService{
 
 	@Override
 	public Employee updateOne(Employee entity) {
-		if (employeeRepository.existsById(entity.getIdEmployee())) {
+		if (employeeRepository.existsById(entity.getIdUser())) {
 			return employeeRepository.save(entity);
 		}else
 			return null;
 	}
 
 	@Override
-	public int deleteOne(String key) {
+	public int deleteOne(Integer key) {
 		if(employeeRepository.existsById(key)) {
 			try {
 				employeeRepository.deleteById(key);
@@ -55,4 +55,7 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService{
 		}
 		return 0;
 	}
+
+
+
 }
