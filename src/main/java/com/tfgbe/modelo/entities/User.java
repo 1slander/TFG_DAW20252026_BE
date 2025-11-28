@@ -22,6 +22,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Entity
 @Table(name="users")
+
 // Tenemos que añadir la anotacion para especificar que nos haga un join por herencia
 @Inheritance(strategy=InheritanceType.JOINED)
 public abstract class User { 

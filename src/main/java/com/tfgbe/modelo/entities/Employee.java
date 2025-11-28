@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -37,7 +39,7 @@ public class Employee extends User  {
 	
 	@Column(name="hire_date")
 	private LocalDate hireDate;
-	
+	@Enumerated(EnumType.STRING)
 	private EmployeeType employeeType;
 	
 //	@OneToOne //MUCHAS DUDAS SOBRE ESTO
