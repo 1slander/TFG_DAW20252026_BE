@@ -26,7 +26,7 @@ public class RestaurantRestController {
 	@Autowired
 	private RestaurantService restaurantService;
 	
-	@GetMapping("/")
+	@GetMapping
 	public ResponseEntity<List<Restaurant>> findAll(){
 		return ResponseEntity.status(200).body(restaurantService.findAll());
 		
@@ -44,7 +44,7 @@ public class RestaurantRestController {
         }
     }
 	
-	@PostMapping("/")
+	@PostMapping
     public ResponseEntity<Restaurant> insertOne(@RequestBody Restaurant restaurant){
         
         Restaurant newRestaurant = restaurantService.insertOne(restaurant);
@@ -55,7 +55,7 @@ public class RestaurantRestController {
         return ResponseEntity.status(400).body(null); 
     }
 	
-	@PutMapping("/{idRestaurant}")
+	@PutMapping("update/{idRestaurant}")
     public ResponseEntity<?> updateOne(@PathVariable String idRestaurant,
                                      @RequestBody Restaurant restaurant){
         
@@ -68,7 +68,7 @@ public class RestaurantRestController {
         }
     }
 	
-	@DeleteMapping("/{idRestaurant}")
+	@DeleteMapping("delete/{idRestaurant}")
     public ResponseEntity<String> deleteOne(@PathVariable String idRestaurant){
         
         switch(restaurantService.deleteOne(idRestaurant)) {
