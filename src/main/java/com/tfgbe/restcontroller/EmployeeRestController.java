@@ -24,12 +24,12 @@ public class EmployeeRestController {
 	@Autowired
 	EmployeeService employeeService;
 	
-	@GetMapping("/all")
-	public List<Employee> findAll(){
-		return employeeService.findAll();
+	@GetMapping
+	public ResponseEntity<List<Employee>> findAll(){
+		return ResponseEntity.status(200).body(employeeService.findAll());
 	}
 	
-	@GetMapping("/byId/{id}")
+	@GetMapping("/{id}")
 	public ResponseEntity<?> findById(@PathVariable int id){
 		Employee e = employeeService.findById(id);
 		if (e!= null) {
@@ -39,7 +39,7 @@ public class EmployeeRestController {
 		}
 	}
 	
-	@PostMapping("/insert")
+	@PostMapping
 	public ResponseEntity<?> insertOne(@RequestBody Employee employee){
 		if (employeeService.insertOne(employee)!= null) {
 			return new ResponseEntity<Employee>(employee, HttpStatus.OK);
