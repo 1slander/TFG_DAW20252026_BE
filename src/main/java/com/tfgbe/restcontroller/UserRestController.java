@@ -29,13 +29,13 @@ public class UserRestController {
 	UserService userService;
 
 	
-	@GetMapping("/all")
+	@GetMapping
 	public ResponseEntity<List<User>> findAll(){
 		return ResponseEntity.status(200).body(userService.findAll());
 		
 	}
 	
-	@GetMapping("/byId/{id}")
+	@GetMapping("/{id}")
 	public ResponseEntity<?> findById(@PathVariable int id){
 		User u = userService.findById(id);
 		if(u!=null) {
@@ -45,7 +45,7 @@ public class UserRestController {
 		}
 	}
 	
-	
+	/*
 	@PostMapping("/insert")
 	public ResponseEntity<?> insertOne(@RequestBody User user){
 		if (userService.insertOne(user)!=null) {
@@ -54,7 +54,9 @@ public class UserRestController {
 			return new ResponseEntity<String>("INSERT ERROR", HttpStatus.BAD_REQUEST);
 		}
 	}
+	*/
 	
+	/*
 	@PutMapping("/update/{id}")
 	public ResponseEntity<?> updateOne(@RequestBody User user){
 		if (userService.updateOne(user)!= null) {
@@ -63,7 +65,9 @@ public class UserRestController {
 			return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
 		}
 	}
+	*/
 	
+	/*
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<?> deleteOne(@PathVariable int id){
 		switch (userService.deleteOne(id)) {
@@ -75,7 +79,7 @@ public class UserRestController {
 			return new ResponseEntity<String>("CAN'T DELETE", HttpStatus.BAD_REQUEST);
 		}
 	}
-	
+	*/
 	
 	
 	
