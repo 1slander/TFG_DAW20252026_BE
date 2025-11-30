@@ -26,13 +26,13 @@ public class ShiftRestController {
 	@Autowired
 	ShiftService shiftService;
 	
-	@GetMapping("/all")
+	@GetMapping
 	public ResponseEntity<List<Shift>> findAll(){
 		return ResponseEntity.status(200).body(shiftService.findAll());
 		
 	}
 	
-	@GetMapping("/byId/{id}")
+	@GetMapping("/{id}")
 	public ResponseEntity<?> findById(@PathVariable int id){
 		Shift s = shiftService.findById(id);
 		if (s != null) {
@@ -43,7 +43,7 @@ public class ShiftRestController {
 	}
 	
 	
-	@PostMapping("/insert")
+	@PostMapping
 	public ResponseEntity<?> insertOne(@RequestBody Shift shift){
 		if (shiftService.insertOne(shift)!=null) {
 			return new ResponseEntity<Shift>(shift, HttpStatus.OK);
@@ -53,7 +53,7 @@ public class ShiftRestController {
 	}
 	
 	
-	@PutMapping("/update")
+	@PutMapping("/update/{id}")
 	public ResponseEntity<?> updateOne(@RequestBody Shift shift){
 		if(shiftService.updateOne(shift)!= null) {
 			return new ResponseEntity<Shift>(shift,HttpStatus.OK);
