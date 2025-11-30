@@ -30,7 +30,7 @@ public class EmployeeRestController {
 	}
 	
 	@GetMapping("/byId/{id}")
-	public ResponseEntity<?> findById(@PathVariable String id){
+	public ResponseEntity<?> findById(@PathVariable int id){
 		Employee e = employeeService.findById(id);
 		if (e!= null) {
 			return new ResponseEntity<Employee>(e,HttpStatus.OK);
@@ -58,7 +58,7 @@ public class EmployeeRestController {
 	}
 	
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<?> deleteOne(@PathVariable String id){
+	public ResponseEntity<?> deleteOne(@PathVariable int id){
 		switch (employeeService.deleteOne(id)) {
 		case 1:
 			return new ResponseEntity<String>("DELETED", HttpStatus.OK);
