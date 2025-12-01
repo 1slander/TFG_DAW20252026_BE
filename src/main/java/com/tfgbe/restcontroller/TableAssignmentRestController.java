@@ -33,7 +33,7 @@ public class TableAssignmentRestController {
 	public ResponseEntity<List<TableAssignment>> findAll(){
 		return ResponseEntity.status(200).body(assignmentService.findAll());
 	}
-	/*
+	
 	@GetMapping("/{id}")
 	public ResponseEntity<?> findById(@PathVariable int id){
 		TableAssignment t = assignmentService.findById(id);
@@ -43,7 +43,7 @@ public class TableAssignmentRestController {
 			return new ResponseEntity<String>("TABLE ASSIGNMENT NOT FOUND", HttpStatus.NOT_FOUND);
 		}
 	}
-	*/
+	
 	
 	@PostMapping
 	public ResponseEntity<?> insertOne(@RequestBody TableAssignment tableAssignment){
@@ -55,7 +55,10 @@ public class TableAssignmentRestController {
 	}
 	
 	@PutMapping("/update/{id}")
-	public ResponseEntity<?> updateOne(@RequestBody TableAssignment tableAssignment){
+	public ResponseEntity<?> updateOne(@PathVariable int id, @RequestBody TableAssignment tableAssignment){
+		
+		tableAssignment.setIdAssigment(id);
+		
 		if (assignmentService.updateOne(tableAssignment)!= null) {
 			return new ResponseEntity<TableAssignment>(tableAssignment, HttpStatus.OK);
 		}else {
