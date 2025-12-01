@@ -28,8 +28,7 @@ public class ShiftRestController {
 	
 	@GetMapping
 	public ResponseEntity<List<Shift>> findAll(){
-		return ResponseEntity.status(200).body(shiftService.findAll());
-		
+		return ResponseEntity.status(200).body(shiftService.findAll());	
 	}
 	
 	@GetMapping("/{id}")
@@ -54,7 +53,10 @@ public class ShiftRestController {
 	
 	
 	@PutMapping("/update/{id}")
-	public ResponseEntity<?> updateOne(@RequestBody Shift shift){
+	public ResponseEntity<?> updateOne(@PathVariable int id, @RequestBody Shift shift){
+		
+		shift.setIdShift(id);
+		
 		if(shiftService.updateOne(shift)!= null) {
 			return new ResponseEntity<Shift>(shift,HttpStatus.OK);
 		}else {

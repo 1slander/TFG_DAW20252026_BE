@@ -49,7 +49,10 @@ public class EmployeeRestController {
 	}
 	
 	@PutMapping("/update/{id}")
-	public ResponseEntity<?> updateOne(@RequestBody Employee employee){
+	public ResponseEntity<?> updateOne(@PathVariable int id, @RequestBody Employee employee){
+		
+		employee.setIdUser(id);
+		
 		if (employeeService.updateOne(employee)!= null) {
 			return new ResponseEntity<Employee>(employee, HttpStatus.OK);
 		}else {
