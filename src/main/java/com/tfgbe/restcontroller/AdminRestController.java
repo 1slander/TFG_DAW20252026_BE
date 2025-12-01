@@ -53,7 +53,10 @@ public class AdminRestController {
 	}
 	
 	@PutMapping ("/update/{id}")
-	public ResponseEntity<?> updateOne(@RequestBody Admin admin){
+	public ResponseEntity<?> updateOne(@PathVariable int id, @RequestBody Admin admin){
+		
+		admin.setIdUser(id);
+		
 		if(adminService.updateOne(admin)!= null) {
 			return new ResponseEntity<Admin>(admin, HttpStatus.OK);
 		}else {
