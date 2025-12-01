@@ -62,7 +62,7 @@ public class TableRestController {
         }
     }
 	
-	@PostMapping("/")
+	@PostMapping
 	public ResponseEntity<Table> insertOne(@RequestBody Table table){
 		Table newTable = tableSer.insertOne(table);
 		
@@ -72,7 +72,7 @@ public class TableRestController {
 		return ResponseEntity.status(400).body(null);
 	}
 	
-	@PutMapping("/{idTable}")
+	@PutMapping("update/{idTable}")
     public ResponseEntity<?> updateOne(@PathVariable Integer idTable,
                                          @RequestBody Table table){
         table.setIdTable(idTable); 
@@ -84,7 +84,7 @@ public class TableRestController {
         }
     }
 	
-	@DeleteMapping("/{idTable}")
+	@DeleteMapping("delete/{idTable}")
     public ResponseEntity<String> deleteTable(@PathVariable Integer idTable){
         
         switch(tableSer.deleteOne(idTable)) {
