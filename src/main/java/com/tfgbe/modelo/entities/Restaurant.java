@@ -34,6 +34,7 @@ public class Restaurant {
     private Integer capacity;
     private Integer totalTables;
     
+    // TODO: Cambiar admin por owner
     @ManyToOne
     @JoinColumn(name = "ID_USER")
     private Admin admin;

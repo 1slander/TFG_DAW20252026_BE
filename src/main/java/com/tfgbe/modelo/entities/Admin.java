@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrimaryKeyJoinColumn;
@@ -16,6 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import jakarta.persistence.Table;
+import jakarta.persistence.criteria.CriteriaBuilder.In;
 
 @Data
 @EqualsAndHashCode(callSuper=false)
@@ -24,19 +28,23 @@ import jakarta.persistence.Table;
 @SuperBuilder
 @Entity
 @Table(name="admins")
-@PrimaryKeyJoinColumn(name="id_user")
-public class Admin extends User {
 
-	@Column(name="can_create_admins")
-	private boolean canCreateAdmins;
+public class Admin{
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name="id_admin")
+	private int idAdmin;
+
+	private String username;
 	
-	//DUDAS => Aqui no hace falta porque por herencia extendemos de USER.
-	//@OneToOne
-	//private User user;
+	private String password;
+
+	@Column(name="role_name")
+	private String roleName;
 	
-	//NO SE SI LO HEMOS HECHO
-	// Aqui si un Admin tiene muchos restaurante tiene que ser una Lista
-	@OneToMany(mappedBy="admin")
-	@JsonIgnore
-	private List<Restaurant> restaurants;
+	
+
+
+	
 }

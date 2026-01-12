@@ -39,8 +39,12 @@ public class Employee extends User  {
 	
 	@Column(name="hire_date")
 	private LocalDate hireDate;
-	@Enumerated(EnumType.STRING)
-	private EmployeeType employeeType;
+
+	// Todo: Cambiar por una tabla
+	// @OneToOne
+	// @JoinColumn(name="id_role")
+	@Column(name="id_role")
+	private int idRole;
 	
 //	@OneToOne //MUCHAS DUDAS SOBRE ESTO
 //	private User user;

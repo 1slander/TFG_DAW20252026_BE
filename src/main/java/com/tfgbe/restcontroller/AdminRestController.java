@@ -52,17 +52,18 @@ public class AdminRestController {
 		  }
 	}
 	
-	@PutMapping ("/update/{id}")
-	public ResponseEntity<?> updateOne(@PathVariable int id, @RequestBody Admin admin){
+	// @PutMapping ("/update/{id}")
+	// public ResponseEntity<?> updateOne(@PathVariable int id, @RequestBody Admin admin){
 		
-		admin.setIdUser(id);
+	// 	// admin.setIdUser(id);
 		
-		if(adminService.updateOne(admin)!= null) {
-			return new ResponseEntity<Admin>(admin, HttpStatus.OK);
-		}else {
-			return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
-		}
-	}
+	// 	// if(adminService.updateOne(admin)!= null) {
+	// 	// 	return new ResponseEntity<Admin>(admin, HttpStatus.OK);
+	// 	// }else {
+	// 	// 	return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
+	// 	// }
+	// 	return ;
+	// }
 	
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<?> deleteOne(@PathVariable int id){
