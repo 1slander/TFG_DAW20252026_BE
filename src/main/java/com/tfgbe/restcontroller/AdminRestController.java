@@ -14,9 +14,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tfgbe.exceptions.NotFoundException;
+import com.tfgbe.modelo.dto.AdminResponseDto;
 import com.tfgbe.modelo.entities.Admin;
 import com.tfgbe.modelo.entities.Employee;
+import com.tfgbe.modelo.entities.Role;
 import com.tfgbe.modelo.services.AdminService;
+import com.tfgbe.modelo.services.RoleService;
+
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/admin")
@@ -24,60 +31,32 @@ public class AdminRestController {
 
 	@Autowired
 	AdminService adminService;
+
+	@Autowired
+	RoleService roleService;	
 	
 	
-	// Aqui tendriamos que decidir si queremos que se vean o no
 	@GetMapping
-	public List<Admin> findAll(){
-		return adminService.findAll();
+	public ResponseEntity<?> findAll(){
+
+		return new ResponseEntity<List<AdminResponseDto>>(adminService.findAll(),HttpStatus.OK);
 	}
-	
-	
+
+
 	@GetMapping("/{id}")
 	public ResponseEntity<?> findById(@PathVariable int id){
-		Admin a = adminService.findById(id);
-		if (a!= null) {
-			return new ResponseEntity<Admin>(a,HttpStatus.OK);
-		}else {
-			return new ResponseEntity<String>("ADMIN NOT FOUND", HttpStatus.NOT_FOUND);
+		AdminResponseDto admin = adminService.findById(id);
+		if(admin == null){
+			throw new NotFoundException("No se encontro admin con la ID: " + id);
 		}
+
+		return new ResponseEntity<AdminResponseDto>(admin,HttpStatus.OK);
 	}
 	
-	@PostMapping
-	public ResponseEntity<?> insertOne(@RequestBody Admin admin){
-		  if (adminService.updateOne(admin)!= null) {
-			  return new ResponseEntity<Admin>(admin,HttpStatus.OK);
-		  } else {
-			  return new ResponseEntity<String>("INSERT ERROR", HttpStatus.BAD_REQUEST);
-		  }
+	// CREACION DE ROLES
+	
+	@PostMapping("/crear-role")
+	public ResponseEntity<?> insertOneRole(@RequestBody Role role){
+		return new ResponseEntity<Role>(roleService.insertOne(role),HttpStatus.CREATED);
 	}
-	
-	// @PutMapping ("/update/{id}")
-	// public ResponseEntity<?> updateOne(@PathVariable int id, @RequestBody Admin admin){
-		
-	// 	// admin.setIdUser(id);
-		
-	// 	// if(adminService.updateOne(admin)!= null) {
-	// 	// 	return new ResponseEntity<Admin>(admin, HttpStatus.OK);
-	// 	// }else {
-	// 	// 	return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
-	// 	// }
-	// 	return ;
-	// }
-	
-	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<?> deleteOne(@PathVariable int id){
-		switch (adminService.deleteOne(id)) {
-		case 1:
-			return new ResponseEntity<String>("DELETED", HttpStatus.OK);
-		case 0:
-			return new ResponseEntity<String>("NOT FOUND", HttpStatus.NOT_FOUND);
-		default:
-			return new ResponseEntity<String>("CAN'T DELETE", HttpStatus.BAD_REQUEST);
-		}
-	}
-	
-	
-	
-	
 }

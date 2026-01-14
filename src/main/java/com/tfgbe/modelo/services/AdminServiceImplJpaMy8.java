@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.tfgbe.exceptions.NotFoundException;
+import com.tfgbe.modelo.dto.AdminResponseDto;
 import com.tfgbe.modelo.entities.Admin;
 import com.tfgbe.modelo.repository.AdminRepository;
 
@@ -16,45 +18,33 @@ public class AdminServiceImplJpaMy8 implements AdminService{
 
 	
 	@Override
-	public Admin findById(Integer key) {
-		//return adminRepository.findById(key).orElse(null);
-		return null;
+	public AdminResponseDto findById(Integer idAdmin) {
+		return adminRepository.findById(idAdmin).map(admin -> AdminResponseDto.convertirAdminDto(admin)).orElseThrow(()->new NotFoundException("No existe el admin con ID: " + idAdmin));
+		
 	}
 
 	@Override
-	public List<Admin> findAll() {
-		return adminRepository.findAll();
+	public List<AdminResponseDto> findAll() {
+		return adminRepository.findAll().stream().map(admin -> AdminResponseDto.convertirAdminDto(admin)).toList();
+	}
+
+	
+	@Override
+	public AdminResponseDto insertOne(AdminResponseDto entity) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'insertOne'");
 	}
 
 	@Override
-	public Admin insertOne(Admin entity) {
-		try {
-			return adminRepository.save(entity);
-		}catch (Exception e) {
-			System.out.println("ERROR : " + e.getMessage());
-			return null;
-		}
-	}
-
-	@Override
-	public Admin updateOne(Admin entity) {
-					return null;
+	public AdminResponseDto updateOne(AdminResponseDto entity) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'updateOne'");
 	}
 
 	@Override
 	public int deleteOne(Integer key) {
-		/*
-		if(adminRepository.existsById(key)) {
-			try {
-				adminRepository.deleteById(key);
-				return 1;
-			} catch (Exception e) {
-				System.out.println("ERROR : " + e.getMessage());
-				return -1;
-			}
-		}
-		return 0;
-		*/
-		return 0;
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'deleteOne'");
 	}
+
 }
