@@ -6,4 +6,6 @@ import com.tfgbe.modelo.entities.Admin;
 
 public interface AdminRepository extends JpaRepository<Admin, Integer>{
 
+    boolean existsByEmail(String email);
+
 }

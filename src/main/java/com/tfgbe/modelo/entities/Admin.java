@@ -25,7 +25,7 @@ import jakarta.persistence.criteria.CriteriaBuilder.In;
 @EqualsAndHashCode(callSuper=false)
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
+@Builder
 @Entity
 @Table(name="admins")
 
@@ -34,14 +34,17 @@ public class Admin{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="id_admin")
-	private int idAdmin;
+	private Integer idAdmin;
 
 	private String username;
+
+	private String email;
 	
 	private String password;
 
+	@Builder.Default
 	@Column(name="role_name")
-	private String roleName;
+	private String roleName ="ROLE_ADMIN";
 	
 	
 

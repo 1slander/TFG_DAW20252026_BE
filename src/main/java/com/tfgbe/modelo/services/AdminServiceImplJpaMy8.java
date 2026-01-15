@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.tfgbe.exceptions.AlreadyExistsException;
+import com.tfgbe.exceptions.DeleteRestrictionException;
 import com.tfgbe.exceptions.NotFoundException;
 import com.tfgbe.modelo.dto.AdminResponseDto;
 import com.tfgbe.modelo.entities.Admin;
@@ -30,21 +32,43 @@ public class AdminServiceImplJpaMy8 implements AdminService{
 
 	
 	@Override
-	public AdminResponseDto insertOne(AdminResponseDto entity) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'insertOne'");
-	}
+	public AdminResponseDto insertOne(Admin entity) {
+		if(adminRepository.existsByEmail(entity.getEmail()))
+				throw new AlreadyExistsException("Ya existe admin con ese email: " + entity.getEmail());
+		if(entity.getRoleName()==null)
+				entity.setRoleName("ROLE_ADMIN");
+		try{
+		 Admin adminSave =	adminRepository.save(entity);
+		 return AdminResponseDto.convertirAdminDto(entity);
+			
+		
+		} catch(Exception e){
+			throw new RuntimeException("Error técnico al guardar el administrador",e);
+		}
+
+
+      }
 
 	@Override
-	public AdminResponseDto updateOne(AdminResponseDto entity) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'updateOne'");
-	}
+	public int deleteOne(int idAdmin) {
+		if(!adminRepository.existsById(idAdmin))
+			return 0;
+		try {
+				adminRepository.deleteById(idAdmin);
+			return 1;
+		} catch (Exception e){
+			throw new DeleteRestrictionException("No se puede eliminar el administrador con id: " + idAdmin + " porque tiene datos vinculados que lo impiden.");
 
-	@Override
-	public int deleteOne(Integer key) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'deleteOne'");
-	}
+				
+		}
+	}	
+    
+	
+
+
+		
+		
+    
+	
 
 }

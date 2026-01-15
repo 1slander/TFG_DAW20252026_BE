@@ -2,6 +2,7 @@ package com.tfgbe.restcontroller;
 
 import java.util.List;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,6 +52,28 @@ public class AdminRestController {
 		}
 
 		return new ResponseEntity<AdminResponseDto>(admin,HttpStatus.OK);
+	}
+
+	@PostMapping("/crear-admin")
+	public ResponseEntity<?> createAdmin(@RequestBody Admin admin){
+		return new ResponseEntity<AdminResponseDto>(adminService.insertOne(admin),HttpStatus.CREATED);
+	}
+
+	@DeleteMapping("/delete-admin/{id}")
+	public ResponseEntity<?> deleteOne(@PathVariable int id){
+
+		switch (adminService.deleteOne(id)) {
+			case 1:
+				return new ResponseEntity<>("Eliminado correctamente",HttpStatus.OK);
+				
+			case 0:
+				return new ResponseEntity<>("Admin no existe",HttpStatus.NOT_FOUND);
+				
+		
+			default:
+				return new ResponseEntity<>("No se puede eliminar admin",HttpStatus.BAD_REQUEST);
+		}
+		
 	}
 	
 	// CREACION DE ROLES
