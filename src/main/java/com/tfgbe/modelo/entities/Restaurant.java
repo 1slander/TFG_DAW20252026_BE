@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -23,8 +25,12 @@ public class Restaurant {
     // PK: Mapea a VARCHAR(255). No usamos @GeneratedValue ya que es un String.
     // Usaremos un valor estático ('CASA_PACO') o UUID si la DB lo soporta, ya que es un solo restaurante.
     @Id 
+   // @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_RESTAURANT", length = 255)
-    private String idRestaurant; 
+    private String idRestaurant;
+    //private int idRestaurant; 
+
+    //private String cif;
 
     @Column(name = "RESTAURANT_NAME", nullable = false, length = 255)
     private String restaurantName;   
@@ -37,7 +43,7 @@ public class Restaurant {
     // TODO: Cambiar admin por owner
     @ManyToOne
     @JoinColumn(name = "ID_USER")
-    private Admin admin;
+    private Employee owener;
     
     // Relación One-to-Many: Un restaurante tiene muchas mesas (Opcional, pero recomendado)
     // @OneToMany(mappedBy = "restaurant")

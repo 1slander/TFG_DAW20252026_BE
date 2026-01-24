@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.tfgbe.exceptions.AlreadyExistsException;
+import com.tfgbe.exceptions.DeleteRestrictionException;
 import com.tfgbe.exceptions.NotFoundException;
 import com.tfgbe.modelo.entities.Role;
 import com.tfgbe.modelo.repository.RoleRepository;
@@ -48,8 +49,15 @@ public class RoleServiceImplJpaMy8 implements RoleService{
 
     @Override
     public int deleteOne(Integer idInteger) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteOne'");
+       if(!roleRepo.existsById(idInteger)){
+            return 0;
+       }
+       try{
+        roleRepo.deleteById(idInteger);
+        return 1;
+       } catch (Exception e){
+        throw new DeleteRestrictionException("No se puede eliminar rol con id: " + idInteger);
+       }
     }
 
     @Override

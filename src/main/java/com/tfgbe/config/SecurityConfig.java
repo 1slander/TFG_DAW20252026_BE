@@ -28,6 +28,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
                     // Primer Filtro
+                    .requestMatchers("/swagger-ui/**").permitAll()
                     .requestMatchers("/login","/signup").permitAll()
                     .requestMatchers("/admin/login").permitAll()
                     .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")

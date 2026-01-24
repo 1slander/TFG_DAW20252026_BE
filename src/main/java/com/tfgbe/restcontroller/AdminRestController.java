@@ -24,6 +24,8 @@ import com.tfgbe.modelo.services.AdminService;
 import com.tfgbe.modelo.services.RoleService;
 
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -69,7 +71,7 @@ public class AdminRestController {
 	
 
 	@DeleteMapping("/delete-admin/{id}")
-	public ResponseEntity<?> deleteOne(@PathVariable int id){
+	public ResponseEntity<?> deleteOneAdmin(@PathVariable int id){
 
 		switch (adminService.deleteOne(id)) {
 			case 1:
@@ -80,16 +82,61 @@ public class AdminRestController {
 				
 		
 			default:
-				return new ResponseEntity<>("No se puede eliminar admin",HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>("No se puede eliminar Admin",HttpStatus.BAD_REQUEST);
 		}
 		
 	}
 	
+
+//* ROLES *//
+
+	// GET ALL
+
+	@GetMapping("/roles")
+	public ResponseEntity<?> getAllRoles() {
+		return new ResponseEntity<List<Role>>(roleService.findAll(),HttpStatus.OK);
+	}
+
+	// GET BY ID
+
+	@GetMapping("/roles/{idRole}")
+	public ResponseEntity<?> getOneById(@PathVariable int idRole){
+		Role role = roleService.findById(idRole);
+		if(role==null){
+			throw new NotFoundException("No se ha encontrado role con esa id: " + idRole);
+		}
+		return new ResponseEntity<Role>(role,HttpStatus.OK);
+	}
+	
+
 	// CREACION DE ROLES
+
+	
 	
 	@PostMapping("/crear-role")
 	public ResponseEntity<?> insertOneRole(@RequestBody Role role){
 		return new ResponseEntity<Role>(roleService.insertOne(role),HttpStatus.CREATED);
 	}
-}
 
+
+
+
+// DELETE ROLE
+
+@DeleteMapping("/roles/{idRole}")
+	public ResponseEntity<?> deleteOneRole(@PathVariable int idRole){
+		
+		switch(roleService.deleteOne(idRole)){
+			case 1:
+				return new ResponseEntity<>("Eliminado correctamente",HttpStatus.OK);
+				
+			case 0:
+				return new ResponseEntity<>("Role no existe",HttpStatus.NOT_FOUND);
+				
+		
+			default:
+				return new ResponseEntity<>("No se puede eliminar Role",HttpStatus.BAD_REQUEST);
+
+		}
+	}
+}
