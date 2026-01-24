@@ -2,7 +2,6 @@ package com.tfgbe.restcontroller;
 
 import java.util.List;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,20 +9,23 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tfgbe.exceptions.NotFoundException;
 import com.tfgbe.modelo.dto.AdminResponseDto;
+import com.tfgbe.modelo.dto.CreateUserDto;
 import com.tfgbe.modelo.entities.Admin;
-import com.tfgbe.modelo.entities.Employee;
+
 import com.tfgbe.modelo.entities.Role;
 import com.tfgbe.modelo.services.AdminService;
 import com.tfgbe.modelo.services.RoleService;
 
-import org.springframework.web.bind.annotation.RequestParam;
+import jakarta.validation.Valid;
+
+
 
 
 @RestController
@@ -54,10 +56,17 @@ public class AdminRestController {
 		return new ResponseEntity<AdminResponseDto>(admin,HttpStatus.OK);
 	}
 
-	@PostMapping("/crear-admin")
-	public ResponseEntity<?> createAdmin(@RequestBody Admin admin){
+	@PostMapping("/signup")
+	public ResponseEntity<?> createAdmin(@RequestBody @Valid CreateUserDto admin){
 		return new ResponseEntity<AdminResponseDto>(adminService.insertOne(admin),HttpStatus.CREATED);
 	}
+
+	@PostMapping("/login")
+	public ResponseEntity<?> loginAdmin(@RequestBody CreateUserDto admin){
+		
+		return new ResponseEntity<>(adminService.authenticateAdmin(admin),HttpStatus.OK);
+	}
+	
 
 	@DeleteMapping("/delete-admin/{id}")
 	public ResponseEntity<?> deleteOne(@PathVariable int id){
@@ -83,3 +92,4 @@ public class AdminRestController {
 		return new ResponseEntity<Role>(roleService.insertOne(role),HttpStatus.CREATED);
 	}
 }
+

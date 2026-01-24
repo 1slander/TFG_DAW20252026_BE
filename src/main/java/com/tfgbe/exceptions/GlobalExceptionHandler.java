@@ -1,14 +1,18 @@
 package com.tfgbe.exceptions;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
 
@@ -28,4 +32,24 @@ public ResponseEntity<ErrorMessage> handleAlreadyExistException(AlreadyExistsExc
     );
     return new ResponseEntity<>(errorMsg, HttpStatus.CONFLICT);
 }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorMessage> handleUnauthorizedException(UnauthorizedException ex, WebRequest req){
+        ErrorMessage errMsg = new ErrorMessage(ex.getMessage(), HttpStatus.UNAUTHORIZED.value(),    req.getDescription(false) ,LocalDateTime.now() );
+        //return new ResponseEntity<>(errMsg,HttpStatus.UNAUTHORIZED);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errMsg);
+    }
+
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String,String>> handleValidationExceptions(MethodArgumentNotValidException e){
+        
+        Map<String,String> errors=new HashMap<>();
+
+        e.getBindingResult().getFieldErrors().forEach(error ->
+            errors.put(error.getField(),error.getDefaultMessage())
+        );
+
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
 }
