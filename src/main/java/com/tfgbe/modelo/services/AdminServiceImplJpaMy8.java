@@ -10,10 +10,11 @@ import com.tfgbe.exceptions.AlreadyExistsException;
 import com.tfgbe.exceptions.DeleteRestrictionException;
 import com.tfgbe.exceptions.NotFoundException;
 import com.tfgbe.exceptions.UnauthorizedException;
-import com.tfgbe.modelo.dto.AdminLoginResponseDto;
+import com.tfgbe.modelo.dto.LoginResponseDto;
 import com.tfgbe.modelo.dto.AdminResponseDto;
-import com.tfgbe.modelo.dto.CreateUserDto;
+import com.tfgbe.modelo.dto.CreateAdminDto;
 import com.tfgbe.modelo.entities.Admin;
+import com.tfgbe.modelo.entities.AdminRole;
 import com.tfgbe.modelo.repository.AdminRepository;
 import com.tfgbe.security.JwtUtil;
 
@@ -23,11 +24,11 @@ public class AdminServiceImplJpaMy8 implements AdminService{
 	@Autowired
 	AdminRepository adminRepository;
 
-	@Autowired
-	PasswordEncoder passwordEncoder;
+		@Autowired
+		PasswordEncoder passwordEncoder;
 
-	@Autowired
-	JwtUtil jwtUtil;
+		@Autowired
+		JwtUtil jwtUtil;
 	
 	@Override
 	public AdminResponseDto findById(Integer idAdmin) {
@@ -42,7 +43,7 @@ public class AdminServiceImplJpaMy8 implements AdminService{
 
 	
 	@Override
-	public AdminResponseDto insertOne(CreateUserDto admin) {
+	public AdminResponseDto insertOne(CreateAdminDto admin) {
 		if(adminRepository.existsByEmail(admin.getEmail()))
 				throw new AlreadyExistsException("Ya existe admin con ese email: " + admin.getEmail());
 		// if(admin.getRoleName()==null)
@@ -52,7 +53,7 @@ public class AdminServiceImplJpaMy8 implements AdminService{
 			newAdmin.setPassword(passwordEncoder.encode(admin.getPassword()));
 			newAdmin.setEmail(admin.getEmail());
 			newAdmin.setUsername(admin.getUsername());
-			newAdmin.setRoleName("ROLE_ADMIN");
+			newAdmin.setRole(AdminRole.ROLE_ADMIN);
 			adminRepository.save(newAdmin);;
 			return AdminResponseDto.convertirAdminDto(newAdmin);
 				
@@ -78,16 +79,16 @@ public class AdminServiceImplJpaMy8 implements AdminService{
 	}
 
 	@Override
-	public AdminLoginResponseDto authenticateAdmin(CreateUserDto loginAdmin) {
+	public LoginResponseDto authenticateAdmin(CreateAdminDto loginAdmin) {
 		Admin exist = adminRepository.findByUsername(loginAdmin.getUsername()).orElseThrow(()-> new UnauthorizedException("Username o password incorrecta"));
 
 		if(!passwordEncoder.matches(loginAdmin.getPassword(),exist.getPassword())){
 			throw new UnauthorizedException("Username o password incorrecta");
 
 		}
-		System.out.println(exist);
-		String token = jwtUtil.generateToken(exist.getUsername(), exist.getRoleName());
-		return AdminLoginResponseDto.builder()
+		
+		String token = jwtUtil.generateToken(exist.getUsername(), exist.getRole().name());
+		return LoginResponseDto.builder()
 		.token(token)
 		.username(exist.getUsername())
 		.build();

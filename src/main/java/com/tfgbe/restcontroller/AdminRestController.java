@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tfgbe.exceptions.NotFoundException;
 import com.tfgbe.modelo.dto.AdminResponseDto;
-import com.tfgbe.modelo.dto.CreateUserDto;
+import com.tfgbe.modelo.dto.CreateAdminDto;
 import com.tfgbe.modelo.entities.Admin;
 
 import com.tfgbe.modelo.entities.Role;
@@ -59,12 +59,12 @@ public class AdminRestController {
 	}
 
 	@PostMapping("/signup")
-	public ResponseEntity<?> createAdmin(@RequestBody @Valid CreateUserDto admin){
+	public ResponseEntity<?> createAdmin(@RequestBody @Valid CreateAdminDto admin){
 		return new ResponseEntity<AdminResponseDto>(adminService.insertOne(admin),HttpStatus.CREATED);
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<?> loginAdmin(@RequestBody CreateUserDto admin){
+	public ResponseEntity<?> loginAdmin(@RequestBody CreateAdminDto admin){
 		
 		return new ResponseEntity<>(adminService.authenticateAdmin(admin),HttpStatus.OK);
 	}

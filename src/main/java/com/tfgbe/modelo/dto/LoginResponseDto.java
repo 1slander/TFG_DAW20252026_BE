@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 @Builder
-public class AdminLoginResponseDto {
+public class LoginResponseDto {
     private String token;
     @Builder.Default
     private String tokenType ="Bearer";

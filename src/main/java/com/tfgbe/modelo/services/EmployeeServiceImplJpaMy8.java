@@ -1,12 +1,33 @@
 package com.tfgbe.modelo.services;
 
 import java.util.List;
+import java.util.Optional;
+
+import javax.management.RuntimeErrorException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.tfgbe.exceptions.AlreadyExistsException;
+import com.tfgbe.exceptions.DeleteRestrictionException;
+import com.tfgbe.exceptions.ForbiddenException;
+import com.tfgbe.exceptions.NoRoleException;
+import com.tfgbe.exceptions.NotFoundException;
+import com.tfgbe.exceptions.UnauthorizedException;
+import com.tfgbe.mapper.EmployeeMapper;
+import com.tfgbe.modelo.dto.CreateEmployeeDto;
+import com.tfgbe.modelo.dto.EmployeeResponseDto;
+import com.tfgbe.modelo.dto.LoginResponseDto;
 import com.tfgbe.modelo.entities.Employee;
+import com.tfgbe.modelo.entities.Role;
 import com.tfgbe.modelo.repository.EmployeeRepository;
+import com.tfgbe.modelo.repository.RoleRepository;
+import com.tfgbe.security.JwtUtil;
+import com.tfgbe.util.RoleUtils;
+import com.tfgbe.util.RolesEnum;
 
 @Service
 public class EmployeeServiceImplJpaMy8 implements EmployeeService{
@@ -14,48 +35,119 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService{
 	@Autowired
 	EmployeeRepository employeeRepository;
 
+	@Autowired
+	RoleRepository roleRepo;
+
+		@Autowired
+	PasswordEncoder passwordEncoder;
+
+	@Autowired
+	JwtUtil jwtUtil;
+
+	
+
 	@Override
-	public Employee findById(Integer key) {
-		return employeeRepository.findById(key).orElse(null);
+	public List<EmployeeResponseDto> findAll() {
+		
+		return employeeRepository.findAll().stream().map(employee -> EmployeeMapper.convertirEmployeeDto(employee)).toList();
 	}
 
 	@Override
-	public List<Employee> findAll() {
-		return employeeRepository.findAll();
+	public EmployeeResponseDto findById(int idEmployee) {
+		return employeeRepository.findById(idEmployee).map(employee -> EmployeeMapper.convertirEmployeeDto(employee)).orElseThrow(()->new NotFoundException("No existe el Empleado con ID: " + idEmployee));
 	}
 
 	@Override
-	public Employee insertOne(Employee entity) {
-		try {
-			return employeeRepository.save(entity);
-		}catch(Exception e) {
-			System.out.println("ERROR : " + e.getMessage());
-			return null;
+	public int deleteOneEmployee(int idEmployee) {
+		if(!employeeRepository.existsById(idEmployee))
+			return 0;
+		try{
+			employeeRepository.deleteById(idEmployee);
+			return 1;
+		} catch(Exception e){
+			throw new DeleteRestrictionException("No se puede eliminar el empleado con ID: " + idEmployee);
 		}
 	}
 
 	@Override
-	public Employee updateOne(Employee entity) {
-		if (employeeRepository.existsById(entity.getIdUser())) {
-			return employeeRepository.save(entity);
-		}else
-			return null;
-	}
+	public EmployeeResponseDto insertOne(CreateEmployeeDto employee) {
+
+   
+    	if (employeeRepository.existsByDni(employee.getDni())) {
+        	throw new AlreadyExistsException(
+            	"El empleado con DNI: " + employee.getDni() + " ya existe."
+        );
+    }
+
+   
+    RolesEnum rolSolicitado = RoleUtils.roleNormalizer(employee.getRole());
+
+    
+    boolean isAdmin = SecurityContextHolder.getContext()
+        .getAuthentication()
+        .getAuthorities()
+        .stream()
+        .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+   
+    if (!isAdmin) {
+
+       
+        RolesEnum rolCreador = SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getAuthorities()
+            .stream()
+            .map(auth -> auth.getAuthority())
+            .findFirst()
+            .map(RoleUtils::roleNormalizer)
+            .orElseThrow(() -> new NoRoleException("Usuario sin rol"));
+
+        if (rolSolicitado.getNivel() >= rolCreador.getNivel()) {
+            throw new ForbiddenException(
+                "No puedes crear un empleado con el rol " + rolSolicitado
+            );
+        }
+    }
+
+    
+    String roleBd = "ROLE_" + rolSolicitado.name();
+    Role roleEntity = roleRepo.findByRoleName(roleBd);
+
+   
+    try {
+        Employee newEmployee = new Employee();
+        newEmployee.setPassword(passwordEncoder.encode(employee.getPassword()));
+        newEmployee.setDni(employee.getDni());
+        newEmployee.setEmail(employee.getEmail());
+        newEmployee.setFirstName(employee.getFirstName());
+        newEmployee.setLastName(employee.getLastName());
+        newEmployee.setRole(roleEntity);
+
+        employeeRepository.save(newEmployee);
+        return EmployeeMapper.convertirEmployeeDto(newEmployee);
+
+    } catch (Exception e) {
+        throw new RuntimeException("Error técnico al guardar el empleado", e);
+    }
+}
+
+
 
 	@Override
-	public int deleteOne(Integer key) {
-		if(employeeRepository.existsById(key)) {
-			try {
-				employeeRepository.deleteById(key);
-				return 1;
-			}catch (Exception e){
-				System.out.println("ERROR : " + e.getMessage());
-				return -1;
-			}
+	public LoginResponseDto authenticateEmployee(CreateEmployeeDto loginEmployee) {
+		Employee exist = employeeRepository.findByDni(loginEmployee.getDni()).orElseThrow(()->new NotFoundException("No se encontró empleado con DNI: "+ loginEmployee.getDni()));
+
+		if(!passwordEncoder.matches(loginEmployee.getPassword(),exist.getPassword())){
+			throw new UnauthorizedException("Usuario o password incorrecto");
 		}
-		return 0;
-	}
+
+		String token = jwtUtil.generateToken(exist.getDni(), exist.getRole().getRoleName());
+		return LoginResponseDto.builder()
+		.token(token)
+		.username(exist.getDni())
+		.build();
 
 
+}
 
 }

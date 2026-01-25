@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -51,5 +52,20 @@ public ResponseEntity<ErrorMessage> handleAlreadyExistException(AlreadyExistsExc
         );
 
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoRoleException.class)
+    public ResponseEntity<ErrorMessage> handleNoRoleException(NoRoleException ex, WebRequest req){
+        ErrorMessage errMsg = new ErrorMessage(ex.getMessage(), HttpStatus.NOT_ACCEPTABLE.value(),   req.getDescription(false), LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(errMsg);
+    }
+
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorMessage> handleForbiddenException(ForbiddenException ex, WebRequest req){
+        ErrorMessage errMsg = new ErrorMessage(ex.getMessage(), HttpStatus.FORBIDDEN.value(),   req.getDescription(false), LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errMsg);
     }
 }

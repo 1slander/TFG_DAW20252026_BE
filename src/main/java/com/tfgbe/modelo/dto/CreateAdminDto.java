@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateUserDto {
+public class CreateAdminDto {
 
     @Size(max=20)
     @NotNull
@@ -19,7 +19,7 @@ public class CreateUserDto {
     private String username;
 
     @NotNull
-    @NotBlank(message = "El email no puede estar vacío")
+    @NotBlank(message = "Email no puede estar vacío")
     private String email;
 
     // @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z]).{6,}$", message = "La contraseña debe ser de al menos 6 caracteres e incluir minúsculas y mayúsculas")

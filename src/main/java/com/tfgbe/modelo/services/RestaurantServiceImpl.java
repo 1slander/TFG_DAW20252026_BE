@@ -16,8 +16,8 @@ public class RestaurantServiceImpl implements RestaurantService{
 	
 	
 	@Override
-	public Restaurant findById(String key) {
-		return restaurantRepository.findById(key).orElse(null);
+	public Restaurant findById(Long key) {
+		return null;
 	}
 
 	@Override
@@ -33,24 +33,26 @@ public class RestaurantServiceImpl implements RestaurantService{
 
 	@Override
 	public Restaurant updateOne(Restaurant entity) {
-		if (restaurantRepository.existsById(entity.getIdRestaurant()))
-			return restaurantRepository.save(entity);
-		else
-			return null;
+		// if (restaurantRepository.existsById(entity.getIdRestaurant()))
+		// 	return restaurantRepository.save(entity);
+		// else
+		// 	return null;
+		return null;
 	}
 
 	@Override
-	public int deleteOne(String key) {
-		if(restaurantRepository.existsById(key)) {
-			try {
-				restaurantRepository.deleteById(key);
-				return 1;
-			}catch(Exception e) {
-				return -1;
-			}
-		}
-		else
-			return 0;
-	}
+	public int deleteOne(Long key) {
+	// 	if(restaurantRepository.findById(key)) {
+	// 		try {
+	// 			restaurantRepository.deleteById(key);
+	// 			return 1;
+	// 		}catch(Exception e) {
+	// 			return -1;
+	// 		}
+	// 	}
+	// 	else
+	// 		return 0;
+	return 0;	
+}
 	
 }

@@ -25,12 +25,12 @@ public class Restaurant {
     // PK: Mapea a VARCHAR(255). No usamos @GeneratedValue ya que es un String.
     // Usaremos un valor estático ('CASA_PACO') o UUID si la DB lo soporta, ya que es un solo restaurante.
     @Id 
-   // @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID_RESTAURANT", length = 255)
-    private String idRestaurant;
-    //private int idRestaurant; 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID_RESTAURANT")
+    private Long idRestaurant;
+   
 
-    //private String cif;
+    private String cif;
 
     @Column(name = "RESTAURANT_NAME", nullable = false, length = 255)
     private String restaurantName;   
@@ -43,7 +43,7 @@ public class Restaurant {
     // TODO: Cambiar admin por owner
     @ManyToOne
     @JoinColumn(name = "ID_USER")
-    private Employee owener;
+    private Employee owner;
     
     // Relación One-to-Many: Un restaurante tiene muchas mesas (Opcional, pero recomendado)
     // @OneToMany(mappedBy = "restaurant")

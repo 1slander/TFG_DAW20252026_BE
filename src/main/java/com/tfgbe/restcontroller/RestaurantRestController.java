@@ -33,7 +33,7 @@ public class RestaurantRestController {
 	}
 	
 	@GetMapping("/{idRestaurant}")
-    public ResponseEntity<Restaurant> findById(@PathVariable String idRestaurant){
+    public ResponseEntity<Restaurant> findById(@PathVariable Long idRestaurant){
         
         Restaurant restaurant = restaurantService.findById(idRestaurant);
         
@@ -56,7 +56,7 @@ public class RestaurantRestController {
     }
 	
 	@PutMapping("update/{idRestaurant}")
-    public ResponseEntity<?> updateOne(@PathVariable String idRestaurant,
+    public ResponseEntity<?> updateOne(@PathVariable Long idRestaurant,
                                      @RequestBody Restaurant restaurant){
         
         restaurant.setIdRestaurant(idRestaurant); 
@@ -69,7 +69,7 @@ public class RestaurantRestController {
     }
 	
 	@DeleteMapping("delete/{idRestaurant}")
-    public ResponseEntity<String> deleteOne(@PathVariable String idRestaurant){
+    public ResponseEntity<String> deleteOne(@PathVariable Long idRestaurant){
         
         switch(restaurantService.deleteOne(idRestaurant)) {
         case 1:

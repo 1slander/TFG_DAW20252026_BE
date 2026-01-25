@@ -24,53 +24,53 @@ public class EmployeeRestController {
 	@Autowired
 	EmployeeService employeeService;
 	
-	@GetMapping
-	public ResponseEntity<List<Employee>> findAll(){
-		return ResponseEntity.status(200).body(employeeService.findAll());
-	}
+	// @GetMapping
+	// public ResponseEntity<List<Employee>> findAll(){
+	// 	return ResponseEntity.status(200).body(employeeService.findAll());
+	// }
 	
-	@GetMapping("/{id}")
-	public ResponseEntity<?> findById(@PathVariable int id){
-		Employee e = employeeService.findById(id);
-		if (e!= null) {
-			return new ResponseEntity<Employee>(e,HttpStatus.OK);
-		}else {
-			return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
-		}
-	}
+	// @GetMapping("/{id}")
+	// public ResponseEntity<?> findById(@PathVariable int id){
+	// 	Employee e = employeeService.findById(id);
+	// 	if (e!= null) {
+	// 		return new ResponseEntity<Employee>(e,HttpStatus.OK);
+	// 	}else {
+	// 		return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
+	// 	}
+	// }
 	
-	@PostMapping
-	public ResponseEntity<?> insertOne(@RequestBody Employee employee){
-		if (employeeService.insertOne(employee)!= null) {
-			return new ResponseEntity<Employee>(employee, HttpStatus.OK);
-		}else {
-			return new ResponseEntity<String>("INSERT ERROR", HttpStatus.BAD_REQUEST);
-		}
-	}
+	// @PostMapping
+	// public ResponseEntity<?> insertOne(@RequestBody Employee employee){
+	// 	if (employeeService.insertOne(employee)!= null) {
+	// 		return new ResponseEntity<Employee>(employee, HttpStatus.OK);
+	// 	}else {
+	// 		return new ResponseEntity<String>("INSERT ERROR", HttpStatus.BAD_REQUEST);
+	// 	}
+	// }
 	
-	@PutMapping("/update/{id}")
-	public ResponseEntity<?> updateOne(@PathVariable int id, @RequestBody Employee employee){
+	// @PutMapping("/update/{id}")
+	// public ResponseEntity<?> updateOne(@PathVariable int id, @RequestBody Employee employee){
 		
-		employee.setIdUser(id);
+	// 	employee.setIdUser(id);
 		
-		if (employeeService.updateOne(employee)!= null) {
-			return new ResponseEntity<Employee>(employee, HttpStatus.OK);
-		}else {
-			return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
-		}
-	}
+	// 	if (employeeService.updateOne(employee)!= null) {
+	// 		return new ResponseEntity<Employee>(employee, HttpStatus.OK);
+	// 	}else {
+	// 		return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
+	// 	}
+	// }
 	
-	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<?> deleteOne(@PathVariable int id){
-		switch (employeeService.deleteOne(id)) {
-		case 1:
-			return new ResponseEntity<String>("DELETED", HttpStatus.OK);
-		case 0:
-			return new ResponseEntity<String>("NOT FOUND", HttpStatus.NOT_FOUND);
-		default:
-			return new ResponseEntity<String>("CAN'T DELETE", HttpStatus.BAD_REQUEST);
-		}
-	}
+	// @DeleteMapping("/delete/{id}")
+	// public ResponseEntity<?> deleteOne(@PathVariable int id){
+	// 	switch (employeeService.deleteOne(id)) {
+	// 	case 1:
+	// 		return new ResponseEntity<String>("DELETED", HttpStatus.OK);
+	// 	case 0:
+	// 		return new ResponseEntity<String>("NOT FOUND", HttpStatus.NOT_FOUND);
+	// 	default:
+	// 		return new ResponseEntity<String>("CAN'T DELETE", HttpStatus.BAD_REQUEST);
+	// 	}
+	// }
 	
 	
 	

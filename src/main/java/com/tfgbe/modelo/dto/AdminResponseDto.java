@@ -21,7 +21,7 @@ public class AdminResponseDto {
                 .idAdmin(admin.getIdAdmin())
                 .username(admin.getUsername())
                 .email(admin.getEmail())
-                .roleName(admin.getRoleName())
+                .roleName(admin.getRole().name())
                 .build();
     }
 
