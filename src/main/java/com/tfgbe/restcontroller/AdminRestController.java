@@ -42,7 +42,7 @@ public class AdminRestController {
 	
 	
 	@GetMapping
-	public ResponseEntity<?> findAll(){
+	public ResponseEntity<?> getAllAdmins(){
 
 		return new ResponseEntity<List<AdminResponseDto>>(adminService.findAll(),HttpStatus.OK);
 	}
@@ -63,17 +63,11 @@ public class AdminRestController {
 		return new ResponseEntity<AdminResponseDto>(adminService.insertOne(admin),HttpStatus.CREATED);
 	}
 
-	@PostMapping("/login")
-	public ResponseEntity<?> loginAdmin(@RequestBody CreateAdminDto admin){
 		
-		return new ResponseEntity<>(adminService.authenticateAdmin(admin),HttpStatus.OK);
-	}
-	
+	@DeleteMapping("/delete-admin/{idAdmin}")
+	public ResponseEntity<?> deleteOneAdmin(@PathVariable int idAdmin){
 
-	@DeleteMapping("/delete-admin/{id}")
-	public ResponseEntity<?> deleteOneAdmin(@PathVariable int id){
-
-		switch (adminService.deleteOne(id)) {
+		switch (adminService.deleteOne(idAdmin)) {
 			case 1:
 				return new ResponseEntity<>("Eliminado correctamente",HttpStatus.OK);
 				

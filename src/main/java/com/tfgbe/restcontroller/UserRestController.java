@@ -25,25 +25,25 @@ import com.tfgbe.modelo.services.UserService;
 @RequestMapping("/user")
 public class UserRestController {
 	
-	@Autowired
-	UserService userService;
+	// @Autowired
+	// UserService userService;
 
 	
-	@GetMapping
-	public ResponseEntity<List<User>> findAll(){
-		return ResponseEntity.status(200).body(userService.findAll());
+	// @GetMapping
+	// public ResponseEntity<List<User>> findAll(){
+	// 	return ResponseEntity.status(200).body(userService.findAll());
 		
-	}
+	// }
 	
-	@GetMapping("/{id}")
-	public ResponseEntity<?> findById(@PathVariable int id){
-		User u = userService.findById(id);
-		if(u!=null) {
-			return new ResponseEntity<User>(u,HttpStatus.OK);
-		}else {
-			return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
-		}
-	}
+	// @GetMapping("/{id}")
+	// public ResponseEntity<?> findById(@PathVariable int id){
+	// 	User u = userService.findById(id);
+	// 	if(u!=null) {
+	// 		return new ResponseEntity<User>(u,HttpStatus.OK);
+	// 	}else {
+	// 		return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
+	// 	}
+	// }
 	
 	/*
 	@PostMapping("/insert")

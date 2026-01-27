@@ -14,6 +14,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.tfgbe.security.JwtAuthenticationFilter;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 @Configuration
 public class SecurityConfig {
 
@@ -35,6 +37,13 @@ public class SecurityConfig {
                     //.requestMatchers(HttpMethod.GET,"/admin/**").authenticated() EJEMPLo
                     .anyRequest().permitAll()
                 )
+                .exceptionHandling((ex -> ex.authenticationEntryPoint((req,res,authException)->{
+                    res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "No autenticado");
+                })
+                .accessDeniedHandler((req,res,accessDeniedException)->{
+                    res.sendError(HttpServletResponse.SC_FORBIDDEN,"No tienes permisos");
+                })
+            ))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(Customizer.withDefaults());
 

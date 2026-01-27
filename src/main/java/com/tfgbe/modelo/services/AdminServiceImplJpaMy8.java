@@ -66,6 +66,7 @@ public class AdminServiceImplJpaMy8 implements AdminService{
 
 	@Override
 	public int deleteOne(int idAdmin) {
+		// TODO: QUIERO QUE EL ADMIN CON ID 1 NUNCA SE PUEDA BORRAR
 		if(!adminRepository.existsById(idAdmin))
 			return 0;
 		try {
