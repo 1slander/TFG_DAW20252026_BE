@@ -19,16 +19,17 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UpdateEmployeeDto {
 
-@NotBlank(message = "Nombre no puede estar vacío")
+
 private String firstName;
-@NotBlank(message = "Apellidos no pueden estar vacío")
+
 private String lastName; 
-@Email
+@Email(message = "Email no válido")
 private String email;
 
 private Boolean isActive;  
 
 private Double hourlyWage;    
+private String role;
 
 
 }

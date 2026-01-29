@@ -162,7 +162,8 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService{
 
 			newEmployee.setRole(roleEntity);
 		}
-
+		newEmployee.setCreatedAt(LocalDate.now());
+		newEmployee.setHireDate(LocalDate.now());
         employeeRepository.save(newEmployee);
         return EmployeeMapper.convertirEmployeeDto(newEmployee);
 
@@ -173,80 +174,136 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService{
 
 }
 
-
+ // UPDATE
 
 	@Override
 	public EmployeeResponseDto updateOne(int idEmployee,UpdateEmployeeDto updateEmployeeDto) {
-		Employee employeeUpdate = employeeRepository.findById(idEmployee).orElse(null);
-		if(employeeUpdate==null){
-			throw new NotFoundException("Empleado con id: " + idEmployee + " no existe.");
-		}
-
-		 boolean isAdmin = SecurityContextHolder.getContext()
-        .getAuthentication()
-        .getAuthorities()
-        .stream()
-        .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
 		
-		
+    Employee employeeUpdate = employeeRepository.findById(idEmployee)
+            .orElseThrow(() ->
+                    new NotFoundException("Empleado con id: " + idEmployee + " no existe.")
+            );
 
-       
-        RolesEnum rolCreador = SecurityContextHolder.getContext()
+   
+    boolean isAdmin = SecurityContextHolder.getContext()
             .getAuthentication()
             .getAuthorities()
             .stream()
-            .map(auth -> auth.getAuthority())
-            .findFirst()
-            .map(RoleUtils::roleNormalizer)
-            .orElseThrow(() -> new NoRoleException("Usuario sin rol"));
+            .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
 
-		RolesEnum rolSolicitado = RoleUtils.roleNormalizer(employeeUpdate.getRole().getRoleName());
+    
+    RolesEnum rolCreador = null;
+    if (!isAdmin) {
+        rolCreador = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .stream()
+                .map(auth -> auth.getAuthority())
+                .findFirst()
+                .map(RoleUtils::roleNormalizer)
+                .orElseThrow(() -> new NoRoleException("Usuario sin rol"));
+    }
 
-		if (!isAdmin && rolSolicitado.getNivel() >= rolCreador.getNivel()) {
+    
+    String dniAuth = SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getName();
+
+    Employee authEmployee = employeeRepository.findByDni(dniAuth)
+            .orElseThrow(() ->
+                    new NotFoundException("Empleado autenticado no existe")
+            );
+
+    boolean isSelfUpdate = authEmployee.getDni().equals(employeeUpdate.getDni());
+
+    
+    RolesEnum rolEmpleado = RoleUtils.roleNormalizer(
+            employeeUpdate.getRole().getRoleName()
+    );
+
+    
+    if (!isAdmin && rolEmpleado.getNivel() >= rolCreador.getNivel()) {
+        throw new ForbiddenException(
+                "No puedes actualizar un empleado con el rol " + rolEmpleado +
+                " tu nivel es menor o igual"
+        );
+    }
+
+
+
+    if (updateEmployeeDto.getFirstName() != null) {
+        employeeUpdate.setFirstName(updateEmployeeDto.getFirstName());
+    }
+
+    if (updateEmployeeDto.getLastName() != null) {
+        employeeUpdate.setLastName(updateEmployeeDto.getLastName());
+    }
+
+    if (updateEmployeeDto.getEmail() != null) {
+        employeeUpdate.setEmail(updateEmployeeDto.getEmail());
+    }
+
+    if (updateEmployeeDto.getIsActive() != null) {
+        employeeUpdate.setActive(updateEmployeeDto.getIsActive());
+    }
+
+   
+    if (updateEmployeeDto.getHourlyWage() != null) {
+
+        if (isAdmin ||
+            rolCreador == RolesEnum.OWNER ||
+            rolCreador == RolesEnum.MANAGER) {
+
+            employeeUpdate.setHourlyWage(updateEmployeeDto.getHourlyWage());
+
+        } else {
+            throw new ForbiddenException("No puedes modificar el salario");
+        }
+    }
+
+
+    if (updateEmployeeDto.getRole() != null) {
+
+        
+        if (isSelfUpdate && !isAdmin) {
+            throw new ForbiddenException("No puedes cambiar tu propio rol");
+        }
+
+      
+        if (!isAdmin && rolCreador != RolesEnum.OWNER) {
+            throw new ForbiddenException("Solo ADMIN u OWNER pueden cambiar el rol");
+        }
+
+        RolesEnum nuevoRol = RoleUtils.roleNormalizer(updateEmployeeDto.getRole());
+
+       
+        if (!isAdmin && nuevoRol.getNivel() >= rolCreador.getNivel()) {
             throw new ForbiddenException(
-                "No puedes actualizar un empleado con el rol " + rolSolicitado + " tu nivel es menor que el del rol solicitado."
+                    "No puedes asignar el rol " + nuevoRol +
+                    " porque es igual o superior al tuyo"
             );
         }
 
-		
+        String roleBd = "ROLE_" + nuevoRol.name();
 
-		
-			if(updateEmployeeDto.getFirstName()!=null ){
-				employeeUpdate.setFirstName(updateEmployeeDto.getFirstName());
-			}
-			if(updateEmployeeDto.getLastName()!=null){
-				employeeUpdate.setLastName(updateEmployeeDto.getLastName());
-			}
-			if(updateEmployeeDto.getEmail()!=null){
-				employeeUpdate.setEmail(updateEmployeeDto.getEmail());
-			}
-		
+        Role roleEntity = roleRepo.findByRoleName(roleBd);
 
-			if(updateEmployeeDto.getHourlyWage()!=null){
-				
-					if(isAdmin || rolCreador==RolesEnum.OWNER || rolCreador==RolesEnum.MANAGER){
-						employeeUpdate.setHourlyWage(updateEmployeeDto.getHourlyWage());
+        if (roleEntity == null) {
+            throw new NotFoundException("No existe el role: " + nuevoRol);
+        }
 
-					} else {
-						throw new ForbiddenException("No puedes insertar salario.");
-					}
+        employeeUpdate.setRole(roleEntity);
+    }
 
-			}
-			
-			if(updateEmployeeDto.getIsActive() != null){
-				employeeUpdate.setActive(updateEmployeeDto.getIsActive());
-			} 
+    
+    employeeUpdate.setUpdatedAt(LocalDate.now());
+    employeeRepository.save(employeeUpdate);
 
-			employeeUpdate.setUpdatedAt(LocalDate.now());
-
-			employeeRepository.save(employeeUpdate);
-
-			
-
-			return EmployeeMapper.convertirEmployeeDto(employeeUpdate);
+    return EmployeeMapper.convertirEmployeeDto(employeeUpdate);
+}
 
 
-	}
+	
 
 	
 

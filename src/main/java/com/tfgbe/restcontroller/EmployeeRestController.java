@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tfgbe.modelo.dto.CreateEmployeeDto;
 import com.tfgbe.modelo.dto.EmployeeResponseDto;
 import com.tfgbe.modelo.dto.UpdateEmployeeDto;
-import com.tfgbe.modelo.entities.Employee;
+
 import com.tfgbe.modelo.services.EmployeeService;
 
 import jakarta.validation.Valid;
 
-import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController

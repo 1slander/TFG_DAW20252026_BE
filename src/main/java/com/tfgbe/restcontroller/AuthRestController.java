@@ -14,7 +14,7 @@ import com.tfgbe.modelo.services.AdminService;
 import com.tfgbe.modelo.services.EmployeeService;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping
 public class AuthRestController {
 
 @Autowired

@@ -19,6 +19,7 @@ public class RestaurantResponseDto {
     private String phone;
     private Integer capacity;
     private Integer totalTables;
+    private int idOwner;
     private String ownerName;
 
    

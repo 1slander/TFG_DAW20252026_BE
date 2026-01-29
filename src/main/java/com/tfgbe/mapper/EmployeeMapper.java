@@ -13,7 +13,8 @@ public class EmployeeMapper {
                 .firstName(employee.getFirstName())
                 .lastName(employee.getLastName())
                 .dni(employee.getDni())
-                .role(employee.getRole().toString())
+                .role(employee.getRole().getRoleName())
+                .hourlyWage(employee.getHourlyWage())
                 .build();
     }
 

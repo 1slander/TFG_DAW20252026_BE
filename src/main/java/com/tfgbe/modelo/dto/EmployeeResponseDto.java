@@ -18,6 +18,7 @@ public class EmployeeResponseDto {
     private String dni;
     // Si necesitamos el role para logica, lo idea seria cambiar a Role role
     private String role;
+    private double hourlyWage;
 
     // Todo: Add Restaurant y Shift
 

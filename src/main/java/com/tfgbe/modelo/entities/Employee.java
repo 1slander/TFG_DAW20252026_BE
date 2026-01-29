@@ -47,8 +47,9 @@ public class Employee extends User  {
 	
 
 	
+	
 	@ManyToOne
-	@JoinColumn(name="id_restaurant")
+	@JoinColumn(name = "id_restaurant", nullable = true)
 	private Restaurant restaurant;
 	
 	
