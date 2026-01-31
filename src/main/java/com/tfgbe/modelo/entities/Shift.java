@@ -2,6 +2,8 @@ package com.tfgbe.modelo.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,6 +27,7 @@ public class Shift {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	public int idShift;
 	
-	@Column(name="assign_shift")
-	public String assignShift;
+	@Enumerated(EnumType.STRING)
+    @Column(name = "assign_shift", nullable = false, unique = true)
+    private ShiftType assignShift;
 }

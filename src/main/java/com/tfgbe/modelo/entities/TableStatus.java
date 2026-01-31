@@ -1,6 +1,6 @@
 package com.tfgbe.modelo.entities;
 
-public enum Status {
+public enum TableStatus {
 	
 	BOOKED,
 	NOT_BOOKED,

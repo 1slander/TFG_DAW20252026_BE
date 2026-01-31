@@ -68,4 +68,11 @@ public ResponseEntity<ErrorMessage> handleAlreadyExistException(AlreadyExistsExc
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errMsg);
     }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorMessage> handleBadRequestException(BadRequestException ex, WebRequest req){
+        ErrorMessage errMsg = new ErrorMessage(ex.getMessage(),HttpStatus.BAD_REQUEST.value() ,req.getDescription(false),LocalDateTime.now());
+
+        return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errMsg);
+    }
 }

@@ -1,57 +1,159 @@
 package com.tfgbe.modelo.services;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.tfgbe.exceptions.ForbiddenException;
+import com.tfgbe.exceptions.UnauthorizedException;
+import com.tfgbe.mapper.TableAssignmentMapper;
+import com.tfgbe.modelo.dto.CreateTableAssignmentDto;
+import com.tfgbe.modelo.dto.TableAssignmentResponseDto;
+import com.tfgbe.modelo.entities.Employee;
 import com.tfgbe.modelo.entities.TableAssignment;
-
+import com.tfgbe.modelo.entities.TableEntity;
+import com.tfgbe.modelo.entities.TableStatus;
+import com.tfgbe.modelo.repository.EmployeeRepository;
 import com.tfgbe.modelo.repository.TableAssignmentRepository;
+import com.tfgbe.modelo.repository.TableRepository;
 
 @Service
 
 public class TableAssignmentServiceImpl implements TableAssignmentService{
-	
-	@Autowired
-    private TableAssignmentRepository tableAssignmentRep; 
+	 @Autowired
+    private TableAssignmentRepository tableAssignmentRepository;
+
+    @Autowired
+    private TableRepository tableRepository;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private TableService tableService;
 
     @Override
-    public TableAssignment findById(Integer id) {
-        return tableAssignmentRep.findById(id).orElse(null);
-    }
+    public TableAssignmentResponseDto createAssignment(
+            CreateTableAssignmentDto dto) {
 
-    @Override
-    public List<TableAssignment> findAll() {
-        return tableAssignmentRep.findAll();
-    }
+        Employee authEmployee = getAuthenticatedEmployee();
 
-    @Override
-    public TableAssignment insertOne(TableAssignment entity) {
-        
-        return tableAssignmentRep.save(entity);
-    }
+        TableEntity table = tableRepository.findById(dto.getIdTable())
+            .orElseThrow(() -> 
+                new NotFoundException("Mesa no encontrada"));
 
-    @Override
-    public TableAssignment updateOne(TableAssignment entity) {
-       
-        if (tableAssignmentRep.existsById(entity.getIdAssigment())) {
-            return tableAssignmentRep.save(entity);
+        // Validar que pertenece al mismo restaurante
+        if (authEmployee.getRestaurant() == null ||
+            !authEmployee.getRestaurant().getIdRestaurant()
+                .equals(table.getRestaurant().getIdRestaurant())) {
+
+            throw new ForbiddenException(
+                "No puedes asignar mesas de otro restaurante");
         }
-        return null; 
+
+        // Validar que no haya asignación activa
+        tableAssignmentRepository
+            .findByTableAndEndTimeIsNull(table)
+            .ifPresent(a -> {
+                throw new ForbiddenException(
+                    "La mesa ya tiene una asignación activa");
+            });
+
+        TableAssignment assignment = new TableAssignment();
+        assignment.setTable(table);
+        assignment.setEmployee(authEmployee);
+        assignment.setStartTime(dto.getStartTime());
+        assignment.setEndTime(null);
+
+        tableAssignmentRepository.save(assignment);
+
+        // Cambiar estado de la mesa
+        tableService.updateTableStatus(
+            table.getIdTable(),
+            TableStatus.BOOKED
+        );
+
+        return TableAssignmentMapper
+            .convertirTableAssignmentDto(assignment);
+    }
+
+
+    @Override
+    public TableAssignmentResponseDto closeAssignment(
+            Integer idAssignment) {
+
+        TableAssignment assignment =
+            tableAssignmentRepository.findById(idAssignment)
+                .orElseThrow(() -> 
+                    new NotFoundException(
+                        "Asignación no encontrada"));
+
+        if (assignment.getEndTime() != null) {
+            throw new ForbiddenException(
+                "La asignación ya está cerrada");
+        }
+
+        Employee authEmployee = getAuthenticatedEmployee();
+
+        if (authEmployee.getRestaurant() == null ||
+            !authEmployee.getRestaurant().getIdRestaurant()
+                .equals(
+                    assignment.getTable()
+                        .getRestaurant()
+                        .getIdRestaurant()
+                )) {
+
+            throw new ForbiddenException(
+                "No puedes cerrar asignaciones de otro restaurante");
+        }
+
+        assignment.setEndTime(LocalDateTime.now());
+        tableAssignmentRepository.save(assignment);
+
+        tableService.updateTableStatus(
+            assignment.getTable().getIdTable(),
+            TableStatus.NOT_BOOKED
+        );
+
+        return TableAssignmentMapper
+            .convertirTableAssignmentDto(assignment);
     }
 
     @Override
-    public int deleteOne(Integer id) {
-        if (tableAssignmentRep.existsById(id)) {
-            try {
-                tableAssignmentRep.deleteById(id);
-                return 1; 
-            } catch (Exception e) {
-                
-                return -1; 
-            }
+    public List<TableAssignmentResponseDto> findAssignmentsByTable(
+            Integer idTable) {
+
+        Employee authEmployee = getAuthenticatedEmployee();
+
+        TableEntity table = tableRepository.findById(idTable)
+            .orElseThrow(() -> 
+                new NotFoundException("Mesa no encontrada"));
+
+        if (authEmployee.getRestaurant() == null ||
+            !authEmployee.getRestaurant().getIdRestaurant()
+                .equals(table.getRestaurant().getIdRestaurant())) {
+
+            throw new ForbiddenException(
+                "No puedes ver asignaciones de otro restaurante");
         }
-        return 0; 
+
+        return tableAssignmentRepository.findByTable(table)
+            .stream()
+            .map(TableAssignmentMapper::convertirTableAssignmentDto)
+            .toList();
+    }
+
+        private Employee getAuthenticatedEmployee() {
+
+        String dni = SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getName();
+
+        return employeeRepository.findByDni(dni)
+            .orElseThrow(() -> 
+                new UnauthorizedException("Usuario no autenticado"));
     }
 }

@@ -125,7 +125,7 @@ public class RestaurantServiceImpl implements RestaurantService{
             throw new ForbiddenException("Solo un ADMIN puede eliminar restaurantes");
         }
 
-        restaurantRepository.delete(restaurant);
+        restaurantRepository.deleteById(idRestaurant);
         return 1;
 	}
 

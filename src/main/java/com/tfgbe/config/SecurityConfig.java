@@ -43,6 +43,44 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/restaurant/**").hasAuthority("ROLE_ADMIN")
                     .requestMatchers(HttpMethod.PUT, "/restaurant/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
                     .requestMatchers(HttpMethod.DELETE, "/restaurant/**").hasAuthority("ROLE_ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/shift/**")
+                            .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "ROLE_OWNER",
+                                "ROLE_MANAGER",
+                                "ROLE_ASSISTANT_MANAGER",
+                                "ROLE_TEAM_LEADER",
+                                "ROLE_EMPLOYEE"
+                            )
+                    .requestMatchers(HttpMethod.POST, "/shift/**")
+                            .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "ROLE_OWNER",
+                                "ROLE_MANAGER",
+                                "ROLE_ASSISTANT_MANAGER",
+                                "ROLE_TEAM_LEADER"
+                            )
+
+                    .requestMatchers(HttpMethod.PUT, "/shift/**")
+                        .hasAnyAuthority(
+                            "ROLE_ADMIN",
+                            "ROLE_OWNER",
+                            "ROLE_MANAGER",
+                            "ROLE_ASSISTANT_MANAGER",
+                            "ROLE_TEAM_LEADER"
+                        )
+
+                    .requestMatchers(HttpMethod.DELETE, "/shift/**")
+                        .hasAnyAuthority(
+                            "ROLE_ADMIN",
+                            "ROLE_OWNER",
+                            "ROLE_MANAGER",
+                            "ROLE_ASSISTANT_MANAGER",
+                            "ROLE_TEAM_LEADER"
+                        )
+                    .requestMatchers("/table-assignment/**").authenticated()
+                    .requestMatchers("/tables/**").authenticated()
+                    
                     //.requestMatchers(HttpMethod.GET,"/admin/**").authenticated() EJEMPLo
                     .anyRequest().authenticated()
                 )
