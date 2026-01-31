@@ -10,6 +10,7 @@ import lombok.Data;
 @Builder
 public class SignupRequestResponseDto {
 
+    
     private Integer idRequest;
     private String firstName;
     private String lastName;

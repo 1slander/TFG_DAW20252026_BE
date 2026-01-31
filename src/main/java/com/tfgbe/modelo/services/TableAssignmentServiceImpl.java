@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.tfgbe.exceptions.ForbiddenException;
+import com.tfgbe.exceptions.NotFoundException;
 import com.tfgbe.exceptions.UnauthorizedException;
 import com.tfgbe.mapper.TableAssignmentMapper;
 import com.tfgbe.modelo.dto.CreateTableAssignmentDto;
