@@ -1,0 +1,9 @@
+INSERT INTO public.employees (hire_date,hourly_wage,dni,id_role,id_user,id_shift,id_restaurant) VALUES
+	 ('2026-01-28',19.5,'11111111A',2,3,NULL,NULL),
+	 ('2026-01-29',0.0,'22222222A',5,5,NULL,NULL),
+	 (NULL,12.5,'12345678A',1,2,NULL,1),
+	 ('2026-01-31',0.0,'33333333A',1,6,NULL,2),
+	 ('2026-01-31',10.5,'44444444A',4,7,NULL,2),
+	 ('2026-01-31',0.0,'66666666A',5,8,NULL,NULL),
+	 ('2026-01-31',0.0,'77777777A',1,9,NULL,NULL),
+	 ('2026-01-31',10.5,'88888888A',3,10,NULL,2);
