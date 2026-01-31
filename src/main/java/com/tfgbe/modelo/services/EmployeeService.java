@@ -21,7 +21,7 @@ public interface EmployeeService {
     EmployeeResponseDto insertOne (CreateEmployeeDto employee);
     LoginResponseDto authenticateEmployee(CreateEmployeeDto employee);
 
-
+List<EmployeeResponseDto> findMyRestaurantEmployees();
 
     
 

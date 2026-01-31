@@ -59,6 +59,10 @@ public class RestaurantServiceImpl implements RestaurantService{
         restaurant.setTotalTables(dto.getTotalTables());
         restaurant.setOwner(owner);
 
+        // DEBUG PARA VER SI ALC REAR RESTAURANTE EL OWNER SE ACTUALIZA
+        owner.setRestaurant(restaurant);
+        employeeRepository.save(owner);
+
         restaurantRepository.save(restaurant);
 
         return RestaurantMapper.convertirRestaurantDto(restaurant);

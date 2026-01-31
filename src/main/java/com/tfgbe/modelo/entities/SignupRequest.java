@@ -40,6 +40,9 @@ public class SignupRequest {
     @Column(name = "email", nullable = false, length = 255)
     private String email;
 
+    @Column(name = "dni", nullable = false)
+    private String dni;
+
     @Column(name = "phone", length = 30)
     private String phone;
 
@@ -58,6 +61,8 @@ public class SignupRequest {
 
     @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
+
+    
 
     @ManyToOne
     @JoinColumn(name = "resolved_by_admin_id")

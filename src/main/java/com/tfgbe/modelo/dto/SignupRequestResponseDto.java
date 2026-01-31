@@ -18,11 +18,11 @@ public class SignupRequestResponseDto {
     private String phone;
     private String restaurantName;
     private String message;
+    private String dni;
 
     private SignupRequestStatus status;
 
     private LocalDateTime createdAt;
     private LocalDateTime resolvedAt;
-
     private String resolvedByAdmin;
 }

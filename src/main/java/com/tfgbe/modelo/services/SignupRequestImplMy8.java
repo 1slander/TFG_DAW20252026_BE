@@ -19,7 +19,8 @@ import com.tfgbe.modelo.repository.SignupRequestRepository;
 
 @Service
 public class SignupRequestImplMy8 implements SignupResquestService {
- @Autowired
+
+    @Autowired
     private SignupRequestRepository signupRequestRepository;
 
     @Autowired
@@ -38,6 +39,7 @@ public class SignupRequestImplMy8 implements SignupResquestService {
             .message(dto.getMessage())
             .status(SignupRequestStatus.PENDING)
             .createdAt(LocalDateTime.now())
+            .dni(dto.getDni())
             .build();
 
         signupRequestRepository.save(request);

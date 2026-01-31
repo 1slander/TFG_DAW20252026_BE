@@ -22,6 +22,7 @@ public class SignupRequestMapper {
                     ? request.getResolvedBy().getUsername()
                     : null
             )
+            .dni(request.getDni())
             .build();
     }
 }

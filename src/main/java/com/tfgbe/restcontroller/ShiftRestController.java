@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tfgbe.modelo.dto.CreateShiftDto;
+import com.tfgbe.modelo.dto.ShiftResponseDto;
 import com.tfgbe.modelo.dto.UpdateShiftDto;
 import com.tfgbe.modelo.entities.Restaurant;
 import com.tfgbe.modelo.entities.Shift;
@@ -38,16 +39,16 @@ public class ShiftRestController {
 	@GetMapping("/{idShift}")
 	public ResponseEntity<?> findById(@PathVariable int idShift){
 		
-			return new ResponseEntity<Shift>(shiftService.findById(idShift),HttpStatus.OK);
+			return new ResponseEntity<ShiftResponseDto>(shiftService.findById(idShift),HttpStatus.OK);
 		
 	}
 	
 	
 	@PostMapping
 	public ResponseEntity<?> postCreateShift(@Valid @RequestBody CreateShiftDto assignShift){
-		Shift created = shiftService.createShift(assignShift);
+		
 	
-			return new ResponseEntity<>(created, HttpStatus.CREATED);
+			return new ResponseEntity<>(shiftService.createShift(assignShift), HttpStatus.CREATED);
 		
 	}
 	

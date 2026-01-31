@@ -17,4 +17,7 @@ public class CreateTableAssignmentDto {
 
     @NotNull(message = "La fecha de inicio es obligatoria")
     private LocalDateTime startTime;
+
+      @NotNull(message = "El id del empleado es obligatorio")
+    private Integer idEmployee;
 }

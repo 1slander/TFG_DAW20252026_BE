@@ -55,9 +55,29 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService{
 	}
 
 	@Override
-	public EmployeeResponseDto findByIdDto(int idEmployee) {
-		return employeeRepository.findById(idEmployee).map(employee -> EmployeeMapper.convertirEmployeeDto(employee)).orElseThrow(()->new NotFoundException("No existe el Empleado con ID: " + idEmployee));
-	}
+public EmployeeResponseDto findByIdDto(int idEmployee) {
+
+    Employee authEmployee = getAuthenticatedEmployee();
+    boolean isAdmin = hasAuthority("ROLE_ADMIN");
+
+    Employee employee = employeeRepository.findById(idEmployee)
+        .orElseThrow(() ->
+            new NotFoundException(
+                "No existe el Empleado con ID: " + idEmployee));
+
+    if (!isAdmin) {
+        if (authEmployee.getRestaurant() == null ||
+            employee.getRestaurant() == null ||
+            !authEmployee.getRestaurant().getIdRestaurant()
+                .equals(employee.getRestaurant().getIdRestaurant())) {
+
+            throw new ForbiddenException(
+                "No puedes ver empleados de otro restaurante");
+        }
+    }
+
+    return EmployeeMapper.convertirEmployeeDto(employee);
+}
 
 	@Override
 	public int deleteOneEmployee(int idEmployee) {
@@ -303,6 +323,25 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService{
 }
 
 
+
+
+
+@Override
+public List<EmployeeResponseDto> findMyRestaurantEmployees() {
+
+    Employee authEmployee = getAuthenticatedEmployee();
+
+    if (authEmployee.getRestaurant() == null) {
+        throw new ForbiddenException(
+            "El empleado no tiene restaurante asignado");
+    }
+
+    return employeeRepository
+        .findByRestaurant(authEmployee.getRestaurant())
+        .stream()
+        .map(EmployeeMapper::convertirEmployeeDto)
+        .toList();
+}
 	
 
 	
@@ -327,5 +366,23 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService{
 
 
 }
+
+  private Employee getAuthenticatedEmployee() {
+
+        String dni = SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getName();
+
+        return employeeRepository.findByDni(dni)
+            .orElseThrow(() -> new UnauthorizedException("Usuario no autenticado"));
+    }
+
+      private boolean hasAuthority(String role) {
+        return SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getAuthorities()
+            .stream()
+            .anyMatch(a -> a.getAuthority().equals(role));
+    }
 
 }

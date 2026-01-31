@@ -21,6 +21,8 @@ import com.tfgbe.modelo.repository.EmployeeRepository;
 import com.tfgbe.modelo.repository.TableAssignmentRepository;
 import com.tfgbe.modelo.repository.TableRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 
 public class TableAssignmentServiceImpl implements TableAssignmentService{
@@ -36,6 +38,7 @@ public class TableAssignmentServiceImpl implements TableAssignmentService{
     @Autowired
     private TableService tableService;
 
+    @Transactional
     @Override
     public TableAssignmentResponseDto createAssignment(
             CreateTableAssignmentDto dto) {
@@ -46,6 +49,11 @@ public class TableAssignmentServiceImpl implements TableAssignmentService{
             .orElseThrow(() -> 
                 new NotFoundException("Mesa no encontrada"));
 
+        Employee targetEmployee = employeeRepository
+        .findById(dto.getIdEmployee())
+        .orElseThrow(() ->
+        new NotFoundException("Empleado no encontrado"));
+
         // Validar que pertenece al mismo restaurante
         if (authEmployee.getRestaurant() == null ||
             !authEmployee.getRestaurant().getIdRestaurant()
@@ -55,21 +63,32 @@ public class TableAssignmentServiceImpl implements TableAssignmentService{
                 "No puedes asignar mesas de otro restaurante");
         }
 
-        // Validar que no haya asignación activa
+        
+
+        if (targetEmployee.getRestaurant() == null ||
+    !targetEmployee.getRestaurant().getIdRestaurant()
+        .equals(table.getRestaurant().getIdRestaurant())) {
+
+    throw new ForbiddenException(
+        "No puedes asignar una mesa a un empleado de otro restaurante");
+}
+
+    // Validar que no haya asignación activa
         tableAssignmentRepository
             .findByTableAndEndTimeIsNull(table)
             .ifPresent(a -> {
                 throw new ForbiddenException(
                     "La mesa ya tiene una asignación activa");
             });
+        
 
         TableAssignment assignment = new TableAssignment();
-        assignment.setTable(table);
-        assignment.setEmployee(authEmployee);
-        assignment.setStartTime(dto.getStartTime());
-        assignment.setEndTime(null);
+assignment.setTable(table);
+assignment.setEmployee(targetEmployee);
+assignment.setStartTime(dto.getStartTime());
+assignment.setEndTime(null);
 
-        tableAssignmentRepository.save(assignment);
+tableAssignmentRepository.save(assignment);
 
         // Cambiar estado de la mesa
         tableService.updateTableStatus(
@@ -81,7 +100,7 @@ public class TableAssignmentServiceImpl implements TableAssignmentService{
             .convertirTableAssignmentDto(assignment);
     }
 
-
+    @Transactional
     @Override
     public TableAssignmentResponseDto closeAssignment(
             Integer idAssignment) {

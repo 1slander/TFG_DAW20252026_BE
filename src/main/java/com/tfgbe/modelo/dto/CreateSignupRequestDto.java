@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+
 @Data
 public class CreateSignupRequestDto {
 
@@ -24,6 +25,10 @@ public class CreateSignupRequestDto {
 
     @Size(max = 255)
     private String restaurantName;
+
+    @NotBlank(message = "El dni es obligatorio")
+    @Size(min = 9, max = 9, message = "El DNI debe tener exactamente 9 caracteres")
+    private String dni;
 
     private String message;
 }

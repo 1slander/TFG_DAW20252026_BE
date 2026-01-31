@@ -7,11 +7,15 @@ import java.util.Map;
 import org.apache.catalina.connector.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -75,4 +79,14 @@ public ResponseEntity<ErrorMessage> handleAlreadyExistException(AlreadyExistsExc
 
         return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errMsg);
     }
+
+@ExceptionHandler(HttpMessageNotReadableException.class)
+public ResponseEntity<ErrorMessage> handleJsonParseError(
+        HttpMessageNotReadableException ex,
+        HttpServletRequest request) {
+
+    return ResponseEntity
+        .badRequest()
+        .body(new ErrorMessage(ex.getMessage(),HttpStatus.BAD_REQUEST.value(),request.getRequestURI(),LocalDateTime.now()));
+}
 }

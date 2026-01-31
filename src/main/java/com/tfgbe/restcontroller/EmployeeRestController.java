@@ -37,6 +37,14 @@ public class EmployeeRestController {
 		return new ResponseEntity<List<EmployeeResponseDto>>(employeeService.findAll(),HttpStatus.OK);
 	}
 
+	@GetMapping("/restaurant")
+	public ResponseEntity<List<EmployeeResponseDto>> getRestaurantEmployees() {
+    return ResponseEntity.ok(
+        employeeService.findMyRestaurantEmployees()
+    );
+}
+
+
 	@GetMapping("/{idEmployee}")
 	public ResponseEntity<?> getEmployeeById(@PathVariable int idEmployee) {
 		return new ResponseEntity<EmployeeResponseDto>(employeeService.findByIdDto(idEmployee),HttpStatus.OK);

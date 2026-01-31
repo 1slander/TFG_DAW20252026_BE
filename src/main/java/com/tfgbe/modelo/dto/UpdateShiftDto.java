@@ -1,6 +1,9 @@
 package com.tfgbe.modelo.dto;
 
+import com.tfgbe.modelo.entities.ShiftType;
+
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateShiftDto {
 
-    @NotBlank(message = "El turno no puede estar vacío")
-    private String assignShift;
+    @NotNull(message = "El turno es obligatorio")
+    private ShiftType assignShift;
 
 }

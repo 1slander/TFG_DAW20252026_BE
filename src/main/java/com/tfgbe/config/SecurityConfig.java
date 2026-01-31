@@ -35,15 +35,31 @@ public class SecurityConfig {
                     .requestMatchers("/login","/signup").permitAll()
                     .requestMatchers("/admin/login").permitAll()
                     .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/employees").hasAuthority("ROLE_ADMIN")
+                    .requestMatchers(HttpMethod.GET, "/employees/*")
+                    .hasAnyAuthority(
+                        "ROLE_ADMIN",
+                        "ROLE_OWNER",
+                        "ROLE_MANAGER",
+                        "ROLE_ASSISTANT_MANAGER",
+                        "ROLE_TEAM_LEADER"
+                    )
+                    .requestMatchers(HttpMethod.GET, "/employees/restaurant")
+                    .hasAnyAuthority(
+                                        "ROLE_OWNER",
+                                        "ROLE_MANAGER",
+                                        "ROLE_ASSISTANT_MANAGER",
+                                        "ROLE_TEAM_LEADER"
+                                    )
                     .requestMatchers("/employees/create","/employees/delete/**","/employees/update/**").hasAnyAuthority("ROLE_ADMIN","ROLE_OWNER","ROLE_MANAGER")
-                    .requestMatchers(HttpMethod.GET,"/employees/**").hasAnyAuthority("ROLE_ADMIN","ROLE_OWNER","ROLE_MANAGER","ROLE_ASSISTANT_MANAGER","ROLE_TEAM_LEADER","ROLE_EMPLOYEE")
+                    
                     .requestMatchers(HttpMethod.POST, "/restaurant").hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
                     .requestMatchers(HttpMethod.GET, "/restaurant/my").hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
                     .requestMatchers(HttpMethod.GET, "/restaurant/owner/**").hasAuthority("ROLE_ADMIN")
                     .requestMatchers(HttpMethod.GET, "/restaurant/**").hasAuthority("ROLE_ADMIN")
                     .requestMatchers(HttpMethod.PUT, "/restaurant/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
                     .requestMatchers(HttpMethod.DELETE, "/restaurant/**").hasAuthority("ROLE_ADMIN")
-                    .requestMatchers(HttpMethod.GET, "/shift/**")
+                    .requestMatchers(HttpMethod.GET, "/shifts/**")
                             .hasAnyAuthority(
                                 "ROLE_ADMIN",
                                 "ROLE_OWNER",
@@ -52,7 +68,7 @@ public class SecurityConfig {
                                 "ROLE_TEAM_LEADER",
                                 "ROLE_EMPLOYEE"
                             )
-                    .requestMatchers(HttpMethod.POST, "/shift/**")
+                    .requestMatchers(HttpMethod.POST, "/shifts/**")
                             .hasAnyAuthority(
                                 "ROLE_ADMIN",
                                 "ROLE_OWNER",
@@ -61,7 +77,7 @@ public class SecurityConfig {
                                 "ROLE_TEAM_LEADER"
                             )
 
-                    .requestMatchers(HttpMethod.PUT, "/shift/**")
+                    .requestMatchers(HttpMethod.PUT, "/shifts/**")
                         .hasAnyAuthority(
                             "ROLE_ADMIN",
                             "ROLE_OWNER",
@@ -70,7 +86,7 @@ public class SecurityConfig {
                             "ROLE_TEAM_LEADER"
                         )
 
-                    .requestMatchers(HttpMethod.DELETE, "/shift/**")
+                    .requestMatchers(HttpMethod.DELETE, "/shifts/**")
                         .hasAnyAuthority(
                             "ROLE_ADMIN",
                             "ROLE_OWNER",
