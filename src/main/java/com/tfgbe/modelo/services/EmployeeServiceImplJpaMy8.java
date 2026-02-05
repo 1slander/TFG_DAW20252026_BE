@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import javax.management.RuntimeErrorException;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.tfgbe.exceptions.AlreadyExistsException;
+import com.tfgbe.exceptions.BadRequestException;
 import com.tfgbe.exceptions.DeleteRestrictionException;
 import com.tfgbe.exceptions.ForbiddenException;
 import com.tfgbe.exceptions.NoRoleException;
@@ -25,8 +27,10 @@ import com.tfgbe.modelo.dto.LoginResponseDto;
 import com.tfgbe.modelo.dto.UpdateEmployeeDto;
 import com.tfgbe.modelo.entities.Employee;
 import com.tfgbe.modelo.entities.Role;
+import com.tfgbe.modelo.entities.Shift;
 import com.tfgbe.modelo.repository.EmployeeRepository;
 import com.tfgbe.modelo.repository.RoleRepository;
+import com.tfgbe.modelo.repository.ShiftRepository;
 import com.tfgbe.security.JwtUtil;
 import com.tfgbe.util.RoleUtils;
 import com.tfgbe.util.RolesEnum;
@@ -36,6 +40,8 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService{
 
 	@Autowired
 	EmployeeRepository employeeRepository;
+	@Autowired
+	ShiftRepository shiftRepository;
 
 	@Autowired
 	RoleRepository roleRepo;
@@ -103,7 +109,7 @@ public EmployeeResponseDto findByIdDto(int idEmployee) {
             .map(RoleUtils::roleNormalizer)
             .orElseThrow(() -> new NoRoleException("Usuario sin rol"));
 
-		if(isAdmin || rolSolicitado.getNivel() < rolCreador.getNivel()){
+		if(isAdmin || (rolSolicitado.getNivel() < rolCreador.getNivel()&& workSameRestaurant(employee) )){
 
 			try{
 				employeeRepository.deleteById(idEmployee);
@@ -138,6 +144,7 @@ public EmployeeResponseDto findByIdDto(int idEmployee) {
         .stream()
         .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
 
+        
    
     if (!isAdmin) {
 
@@ -168,6 +175,14 @@ public EmployeeResponseDto findByIdDto(int idEmployee) {
 
    
     try {
+        
+ 
+        Employee main  = getAuthenticatedEmployee();
+
+        if(main.getRestaurant()==null && !isAdmin){
+            throw new NotFoundException("El usuario no tiene un restaurante asignado: " + main.getDni());
+        }
+
         Employee newEmployee = new Employee();
         newEmployee.setPassword(passwordEncoder.encode(employee.getPassword()));
         newEmployee.setDni(employee.getDni());
@@ -179,7 +194,7 @@ public EmployeeResponseDto findByIdDto(int idEmployee) {
 			newEmployee.setRole(roleOwner);
 
 		} else {
-
+            newEmployee.setRestaurant(main.getRestaurant());
 			newEmployee.setRole(roleEntity);
 		}
 		newEmployee.setCreatedAt(LocalDate.now());
@@ -384,5 +399,83 @@ public List<EmployeeResponseDto> findMyRestaurantEmployees() {
             .stream()
             .anyMatch(a -> a.getAuthority().equals(role));
     }
+
+
+    private boolean workSameRestaurant(Employee employee){
+        Employee main = getAuthenticatedEmployee();
+
+        return main.getRestaurant().getIdRestaurant().equals(employee.getRestaurant().getIdRestaurant());
+
+    }
+
+    @Override
+    public EmployeeResponseDto assignShiftToEmployee(int employee, int shift) {
+
+         Employee employeeToAssign = employeeRepository.findById(employee)
+        .orElseThrow(() ->
+            new NotFoundException(
+                "No existe el Empleado con ID: " + employee));
+
+         Shift shiftToAssign = shiftRepository.findById(shift).orElseThrow(()->
+                new NotFoundException("No existe Shift con ID: " + shift)
+        );    
+
+        Employee employeeLogged = getAuthenticatedEmployee();
+        boolean isAdmin = hasAuthority("ROLE_ADMIN");
+
+        if(employeeLogged.getIdUser() == employeeToAssign.getIdUser())
+            throw new ForbiddenException("No puedes cambiar tu propio shift");
+
+        if(employeeToAssign.getRestaurant()==null || shiftToAssign.getRestaurant()==null){
+            throw new ForbiddenException("Empleado o turno sin restaraunte asignado");
+        }
+
+        if(!employeeToAssign.getRestaurant().getIdRestaurant().equals(shiftToAssign.getRestaurant().getIdRestaurant()))
+                throw new BadRequestException("Empleado y shift no pertenecen al mismo restaurante.");
+
+         
+        RolesEnum rolCreador = null;
+        if (!isAdmin) {
+
+            if(employeeLogged.getRestaurant()==null){
+                throw new ForbiddenException("No tienes restaurante asignado");
+            }
+
+
+
+            rolCreador = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .stream()
+                .map(auth -> auth.getAuthority())
+                .findFirst()
+                .map(RoleUtils::roleNormalizer)
+                .orElseThrow(() -> new NoRoleException("Usuario sin rol"));
+
+
+             RolesEnum rolEmpleado = RoleUtils.roleNormalizer(
+                employeeToAssign.getRole().getRoleName());
+
+
+                if (rolEmpleado.getNivel() >= rolCreador.getNivel()) {
+                throw new ForbiddenException(
+                        "No puedes actualizar un empleado con el rol " + rolEmpleado +
+                        " tu nivel es menor o igual"
+                        );
+                    }
+
+             }
+
+    
+
+     
+            employeeToAssign.setShift(shiftToAssign);
+            employeeRepository.save(employeeToAssign);
+            return EmployeeMapper.convertirEmployeeDto(employeeLogged);
+            
+            }
+        
+        
+        
 
 }

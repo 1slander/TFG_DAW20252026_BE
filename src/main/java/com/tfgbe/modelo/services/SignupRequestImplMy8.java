@@ -3,10 +3,12 @@ package com.tfgbe.modelo.services;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.tfgbe.exceptions.BadRequestException;
 import com.tfgbe.exceptions.NotFoundException;
 import com.tfgbe.mapper.SignupRequestMapper;
 import com.tfgbe.modelo.dto.CreateSignupRequestDto;
@@ -29,6 +31,9 @@ public class SignupRequestImplMy8 implements SignupResquestService {
     
     @Override
     public SignupRequestResponseDto createRequest(CreateSignupRequestDto dto) {
+
+        if(signupRequestRepository.existsByDniAndEmailAndStatus(dto.getDni(), dto.getEmail(), SignupRequestStatus.PENDING))
+            throw new BadRequestException("La solicitud ya existe y esta pendiente de ser revisada");
 
         SignupRequest request = SignupRequest.builder()
             .firstName(dto.getFirstName())

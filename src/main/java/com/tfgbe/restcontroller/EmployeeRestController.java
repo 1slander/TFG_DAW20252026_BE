@@ -17,20 +17,24 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tfgbe.modelo.dto.CreateEmployeeDto;
 import com.tfgbe.modelo.dto.EmployeeResponseDto;
 import com.tfgbe.modelo.dto.UpdateEmployeeDto;
-
+import com.tfgbe.modelo.repository.EmployeeRepository;
 import com.tfgbe.modelo.services.EmployeeService;
 
 import jakarta.validation.Valid;
-
-
 
 
 @RestController
 @RequestMapping("/employees")
 public class EmployeeRestController {
 
+    private final EmployeeRepository employeeRepository;
+
 	@Autowired
 	EmployeeService employeeService;
+
+    EmployeeRestController(EmployeeRepository employeeRepository) {
+        this.employeeRepository = employeeRepository;
+    }
 	
 	@GetMapping
 	public ResponseEntity<?> getAllEmployees() {
@@ -80,6 +84,11 @@ public class EmployeeRestController {
 		
 	}
 	
+
+	@PutMapping("/{idEmployee}/shift/{idShift}")
+	public ResponseEntity<EmployeeResponseDto> assignShiftToEmployee(@PathVariable int idEmployee, @PathVariable int idShift){
+		return new ResponseEntity<EmployeeResponseDto>(employeeService.assignShiftToEmployee(idEmployee, idShift),HttpStatus.OK);
+	}
 	
 	
 	

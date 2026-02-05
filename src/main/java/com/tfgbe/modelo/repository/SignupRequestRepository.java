@@ -11,4 +11,6 @@ public interface SignupRequestRepository extends JpaRepository<SignupRequest,Int
 
     List<SignupRequest> findByStatus(SignupRequestStatus status);
     List<SignupRequest> findAllByOrderByCreatedAtDesc();
+
+     Boolean existsByDniAndEmailAndStatus(String dni, String email,SignupRequestStatus status);
 }

@@ -15,6 +15,12 @@ public class EmployeeMapper {
                 .dni(employee.getDni())
                 .role(employee.getRole().getRoleName())
                 .hourlyWage(employee.getHourlyWage())
+                .restaurant(
+                employee.getRestaurant() != null
+                    ? employee.getRestaurant().getRestaurantName()
+                    : null
+            )
+                .shift(employee.getShift()!=null ? employee.getShift().getAssignShift().name():"SIN ASIGNAR")
                 .build();
     }
 

@@ -8,6 +8,7 @@ import com.tfgbe.modelo.dto.EmployeeResponseDto;
 import com.tfgbe.modelo.dto.LoginResponseDto;
 import com.tfgbe.modelo.dto.UpdateEmployeeDto;
 import com.tfgbe.modelo.entities.Employee;
+import com.tfgbe.modelo.entities.Shift;
 
 public interface EmployeeService {
     List<EmployeeResponseDto> findAll();
@@ -21,8 +22,8 @@ public interface EmployeeService {
     EmployeeResponseDto insertOne (CreateEmployeeDto employee);
     LoginResponseDto authenticateEmployee(CreateEmployeeDto employee);
 
-List<EmployeeResponseDto> findMyRestaurantEmployees();
-
+    List<EmployeeResponseDto> findMyRestaurantEmployees();
+   EmployeeResponseDto assignShiftToEmployee(int employeeId, int shiftId);
     
 
 }
