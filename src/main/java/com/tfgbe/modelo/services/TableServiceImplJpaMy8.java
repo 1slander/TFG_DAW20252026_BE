@@ -1,73 +1,248 @@
 package com.tfgbe.modelo.services;
 
 import java.util.List;
-import java.util.Optional;
-import com.tfgbe.modelo.entities.Status;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import com.tfgbe.modelo.entities.Table;
+import com.tfgbe.exceptions.ForbiddenException;
+import com.tfgbe.exceptions.NotFoundException;
+import com.tfgbe.exceptions.UnauthorizedException;
+import com.tfgbe.mapper.TableMapper;
+import com.tfgbe.modelo.dto.CreateTableDto;
+import com.tfgbe.modelo.dto.TableResponseDto;
+import com.tfgbe.modelo.dto.UpdateTableDto;
+import com.tfgbe.modelo.entities.Employee;
+import com.tfgbe.modelo.entities.Restaurant;
+import com.tfgbe.modelo.entities.TableEntity;
+import com.tfgbe.modelo.entities.TableStatus;
+import com.tfgbe.modelo.repository.EmployeeRepository;
+import com.tfgbe.modelo.repository.RestaurantRepository;
 import com.tfgbe.modelo.repository.TableRepository;
 
 @Service
 public class TableServiceImplJpaMy8 implements TableService {
 	
-	@Autowired
-	TableRepository tableRep;
+	 @Autowired
+    private TableRepository tableRepository;
+
+    @Autowired
+    private RestaurantRepository restaurantRepository;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Override
+    public TableResponseDto createTable(Long idRestaurant, CreateTableDto dto) {
+
+    Employee authEmployee = getAuthenticatedEmployee();
+    boolean isAdmin = hasAuthority("ROLE_ADMIN");
+
+    Restaurant restaurant = restaurantRepository.findById(idRestaurant)
+        .orElseThrow(() -> new NotFoundException("Restaurante no encontrado"));
+
+    // Si no es admin, debe pertenecer al restaurante
+    if (!isAdmin) {
+        checkEmployeeBelongsToRestaurant(authEmployee, restaurant);
+    }
+
+    TableEntity table = new TableEntity();
+    table.setTableNumber(dto.getTableNumber());
+    table.setTableCapacity(dto.getTableCapacity());
+    table.setRestaurant(restaurant);
+    table.setStatus(TableStatus.NOT_BOOKED);
+
+    tableRepository.save(table);
+
+    return TableMapper.convertirTableDto(table);
+    }
+
+    @Override
+    public TableResponseDto updateTable(int idTable, UpdateTableDto dto) {
+  TableEntity table = tableRepository.findById(idTable)
+        .orElseThrow(() -> new NotFoundException("Mesa no encontrada"));
+
+    Employee authEmployee = getAuthenticatedEmployee();
+    boolean isAdmin = hasAuthority("ROLE_ADMIN");
+
+    if (!isAdmin) {
+        checkEmployeeBelongsToRestaurant(
+            authEmployee,
+            table.getRestaurant()
+        );
+    }
+
+    if (dto.getTableNumber() != null)
+        table.setTableNumber(dto.getTableNumber());
+
+    if (dto.getTableCapacity() != null)
+        table.setTableCapacity(dto.getTableCapacity());
+
+    if (dto.getStatus() != null)
+        table.setStatus(dto.getStatus());
+
+    tableRepository.save(table);
+
+    return TableMapper.convertirTableDto(table);
+    }
+
+    @Override
+    public TableResponseDto findById(int idTable) {
+
+        return tableRepository.findById(idTable)
+            .map(TableMapper::convertirTableDto)
+            .orElseThrow(() -> new NotFoundException("Mesa no encontrada"));
+    }
+
+    @Override
+    public List<TableResponseDto> findAll() {
+
+        return tableRepository.findAll()
+            .stream()
+            .map(TableMapper::convertirTableDto)
+            .toList();
+    }
+
+    @Override
+    public List<TableResponseDto> findByRestaurant(Long idRestaurant) {
+
+       
+    Employee authEmployee = getAuthenticatedEmployee();
+    boolean isAdmin = hasAuthority("ROLE_ADMIN");
+
+    Restaurant restaurant = restaurantRepository.findById(idRestaurant)
+        .orElseThrow(() -> new NotFoundException("Restaurante no encontrado"));
+
+    if (!isAdmin) {
+        checkEmployeeBelongsToRestaurant(authEmployee, restaurant);
+    }
+
+    return tableRepository.findByRestaurant(restaurant)
+        .stream()
+        .map(TableMapper::convertirTableDto)
+        .toList();
+    }
+
+    @Override
+    public int deleteTable(int idTable) {
+
+    TableEntity table = tableRepository.findById(idTable)
+        .orElse(null);
+
+    if (table == null) {
+        return 0;
+    }
+
+    Employee authEmployee = getAuthenticatedEmployee();
+    boolean isAdmin = hasAuthority("ROLE_ADMIN");
+
+    if (!isAdmin) {
+        checkEmployeeBelongsToRestaurant(
+            authEmployee,
+            table.getRestaurant()
+        );
+    }
+
+    try {
+        tableRepository.delete(table);
+        return 1;
+    } catch (Exception e) {
+        
+        return -1;
+    }
+    }
+
+   
+
+    private Employee getAuthenticatedEmployee() {
+
+        String dni = SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getName();
+
+        return employeeRepository.findByDni(dni)
+            .orElseThrow(() -> new UnauthorizedException("Usuario no autenticado"));
+    }
+
+    private boolean hasAuthority(String role) {
+
+        return SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getAuthorities()
+            .stream()
+            .anyMatch(a -> a.getAuthority().equals(role));
+    }
 
 	@Override
-	public Table findById(Integer atributoId) {
-		return tableRep.findById(atributoId).orElse(null);	
-	}
-
-	@Override
-	public List<Table> findAll() {
-		return tableRep.findAll();
-	}
-
-	@Override
-	public Table insertOne(Table entity) {
-		// TODO Auto-generated method stub
-		return tableRep.save(entity);
-	}
-
-	@Override
-	public Table updateOne(Table entity) {
-		if (tableRep.existsById(entity.getIdTable()))
-			return tableRep.save(entity);
-		else
-			return null;
-	}
-
-	@Override
-	public int deleteOne(Integer key) {
-		if(tableRep.existsById(key)) {
-			try {
-				tableRep.deleteById(key);
-				return 1;
-			}catch(Exception e) {
-				return -1;
-			}
-		}
-		else
-			return 0;
-	}
-	@Override
-	public List<Table> findByStatus(Status status) {
-		return tableRep.findByStatus(status);
-	}
-
-	@Override
-	public boolean updateTableStatus(Integer tableId, Status newStatus) {
-		Optional<Table> tableUpt = tableRep.findById(tableId);
+	public List<TableResponseDto> findByStatus(TableStatus status) {
 		
-		if(tableUpt.isPresent()) {
-			Table table = tableUpt.get();
-			table.setStatus(newStatus);
-			tableRep.save(table);
-			return true;
-		}
-		return false;
+    Employee authEmployee = getAuthenticatedEmployee();
+    boolean isAdmin = hasAuthority("ROLE_ADMIN");
+
+    List<TableEntity> tables;
+
+    if (isAdmin) {
+        tables = tableRepository.findByStatus(status);
+    } else {
+
+        if (authEmployee.getRestaurant() == null) {
+            throw new ForbiddenException(
+                "El empleado no tiene restaurante asignado");
+        }
+
+        tables = tableRepository.findByStatus(status)
+            .stream()
+            .filter(table ->
+                table.getRestaurant().getIdRestaurant()
+                    .equals(authEmployee.getRestaurant().getIdRestaurant()))
+            .toList();
+    }
+
+    return tables.stream()
+        .map(TableMapper::convertirTableDto)
+        .toList();
 	}
 
+	@Override
+	public boolean updateTableStatus(Integer tableId, TableStatus newStatus) {
+		 TableEntity table = tableRepository.findById(tableId)
+        .orElseThrow(() -> new NotFoundException("Mesa no encontrada"));
+
+    Employee authEmployee = getAuthenticatedEmployee();
+    boolean isAdmin = hasAuthority("ROLE_ADMIN");
+
+    if (!isAdmin) {
+        if (authEmployee.getRestaurant() == null ||
+            !authEmployee.getRestaurant().getIdRestaurant()
+                .equals(table.getRestaurant().getIdRestaurant())) {
+
+            throw new ForbiddenException(
+                "No puedes modificar mesas de otro restaurante");
+        }
+    }
+
+    table.setStatus(newStatus);
+    tableRepository.save(table);
+
+    return true;
+	}
+
+	
+
+
+
+
+	private void checkEmployeeBelongsToRestaurant(
+        Employee employee,
+        Restaurant restaurant) {
+
+    if (employee.getRestaurant() == null ||
+        !employee.getRestaurant().getIdRestaurant()
+            .equals(restaurant.getIdRestaurant())) {
+
+        throw new ForbiddenException(
+            "No puedes operar sobre mesas de otro restaurante");
+    }
+}
 }

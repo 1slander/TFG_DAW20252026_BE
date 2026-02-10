@@ -4,11 +4,13 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.tfgbe.modelo.entities.Status;
-import com.tfgbe.modelo.entities.Table;
+import com.tfgbe.modelo.entities.TableStatus;
+import com.tfgbe.modelo.entities.Restaurant;
+import com.tfgbe.modelo.entities.TableEntity;
 
-public interface TableRepository extends JpaRepository<Table, Integer> {
+public interface TableRepository extends JpaRepository<TableEntity, Integer> {
 	
-	List <Table> findByStatus(Status status);
+	List <TableEntity> findByStatus(TableStatus status);
+	List<TableEntity> findByRestaurant(Restaurant restaurant);
 	
 }

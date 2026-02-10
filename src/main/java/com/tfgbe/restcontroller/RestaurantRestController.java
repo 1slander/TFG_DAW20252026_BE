@@ -3,6 +3,7 @@ package com.tfgbe.restcontroller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tfgbe.modelo.dto.AssignEmployeeRestaurantDto;
+import com.tfgbe.modelo.dto.CreateRestaurantDto;
+import com.tfgbe.modelo.dto.RestaurantResponseDto;
+import com.tfgbe.modelo.dto.UpdateRestaurantDto;
 import com.tfgbe.modelo.entities.Restaurant;
 import com.tfgbe.modelo.services.RestaurantService;
 
@@ -27,51 +32,40 @@ public class RestaurantRestController {
 	private RestaurantService restaurantService;
 	
 	@GetMapping
-	public ResponseEntity<List<Restaurant>> findAll(){
-		return ResponseEntity.status(200).body(restaurantService.findAll());
+	public ResponseEntity<?> findAll(){
+		return  new ResponseEntity<>(restaurantService.findAll(),HttpStatus.OK);
 		
 	}
 	
 	@GetMapping("/{idRestaurant}")
-    public ResponseEntity<Restaurant> findById(@PathVariable String idRestaurant){
+    public ResponseEntity<?> findById(@PathVariable Long idRestaurant){
         
-        Restaurant restaurant = restaurantService.findById(idRestaurant);
+        RestaurantResponseDto restaurant = restaurantService.findById(idRestaurant);
         
         if (restaurant != null) {
-            return ResponseEntity.status(200).body(restaurant); // 200 OK
+            return new ResponseEntity<>(restaurant,HttpStatus.OK);
         } else {
-            return ResponseEntity.status(404).body(null); // 404 Not Found
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 	
 	@PostMapping
-    public ResponseEntity<Restaurant> insertOne(@RequestBody Restaurant restaurant){
+    public ResponseEntity<?> insertOne(@RequestBody CreateRestaurantDto restaurant){
         
-        Restaurant newRestaurant = restaurantService.insertOne(restaurant);
-        
-        if (newRestaurant != null) {
-             return ResponseEntity.status(201).body(newRestaurant); 
-        }
-        return ResponseEntity.status(400).body(null); 
+      return new ResponseEntity<>(restaurantService.createRestaurant(restaurant),HttpStatus.CREATED);
     }
 	
 	@PutMapping("update/{idRestaurant}")
-    public ResponseEntity<?> updateOne(@PathVariable String idRestaurant,
-                                     @RequestBody Restaurant restaurant){
+    public ResponseEntity<?> updateOne(@PathVariable Long idRestaurant,
+                                     @RequestBody UpdateRestaurantDto restaurant){
         
-        restaurant.setIdRestaurant(idRestaurant); 
-        
-        if ( restaurantService.updateOne(restaurant) != null) {
-            return ResponseEntity.status(200).body(restaurant); // 200 OK
-        } else {
-            return ResponseEntity.status(404).body("Restaurante no encontrado para actualizar"); // 404 Not Found
-        }
+        return new ResponseEntity<>(restaurantService.updateRestaurant(idRestaurant, restaurant),HttpStatus.OK);
     }
 	
 	@DeleteMapping("delete/{idRestaurant}")
-    public ResponseEntity<String> deleteOne(@PathVariable String idRestaurant){
+    public ResponseEntity<?> deleteOne(@PathVariable Long idRestaurant){
         
-        switch(restaurantService.deleteOne(idRestaurant)) {
+        switch(restaurantService.deleteRestaurant(idRestaurant)) {
         case 1:
             return ResponseEntity.status(200).body("Restaurante eliminado con éxito.");
         case 0:
@@ -83,7 +77,20 @@ public class RestaurantRestController {
         }
     }
 	
+	@GetMapping("/my")
+public ResponseEntity<?> getMyRestaurant() {
+    return new ResponseEntity<>(restaurantService.findMyRestaurant(), HttpStatus.OK);
+}
 	
-	
+
+@PutMapping("/assign")
+public ResponseEntity<?> assignEmployeeToRestaurant(
+        @RequestBody AssignEmployeeRestaurantDto dto) {
+
+    return new ResponseEntity<>(
+        restaurantService.assignEmployeeToRestaurant(dto),
+        HttpStatus.OK
+    );
+}
 	
 }

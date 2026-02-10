@@ -3,10 +3,20 @@ package com.tfgbe.modelo.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.tfgbe.exceptions.AlreadyExistsException;
+import com.tfgbe.exceptions.DeleteRestrictionException;
+import com.tfgbe.exceptions.NotFoundException;
+import com.tfgbe.exceptions.UnauthorizedException;
+import com.tfgbe.modelo.dto.LoginResponseDto;
+import com.tfgbe.modelo.dto.AdminResponseDto;
+import com.tfgbe.modelo.dto.CreateAdminDto;
 import com.tfgbe.modelo.entities.Admin;
+import com.tfgbe.modelo.entities.AdminRole;
 import com.tfgbe.modelo.repository.AdminRepository;
+import com.tfgbe.security.JwtUtil;
 
 @Service
 public class AdminServiceImplJpaMy8 implements AdminService{
@@ -14,50 +24,84 @@ public class AdminServiceImplJpaMy8 implements AdminService{
 	@Autowired
 	AdminRepository adminRepository;
 
+		@Autowired
+		PasswordEncoder passwordEncoder;
+
+		@Autowired
+		JwtUtil jwtUtil;
 	
 	@Override
-	public Admin findById(Integer key) {
-		//return adminRepository.findById(key).orElse(null);
-		return null;
+	public AdminResponseDto findById(Integer idAdmin) {
+		return adminRepository.findById(idAdmin).map(admin -> AdminResponseDto.convertirAdminDto(admin)).orElseThrow(()->new NotFoundException("No existe el admin con ID: " + idAdmin));
+		
 	}
 
 	@Override
-	public List<Admin> findAll() {
-		return adminRepository.findAll();
+	public List<AdminResponseDto> findAll() {
+		return adminRepository.findAll().stream().map(admin -> AdminResponseDto.convertirAdminDto(admin)).toList();
 	}
 
+	
 	@Override
-	public Admin insertOne(Admin entity) {
+	public AdminResponseDto insertOne(CreateAdminDto admin) {
+		if(adminRepository.existsByEmail(admin.getEmail()))
+				throw new AlreadyExistsException("Ya existe admin con ese email: " + admin.getEmail());
+		// if(admin.getRoleName()==null)
+		// 		admin.setRoleName("ROLE_ADMIN");
+		try{
+			Admin newAdmin = new Admin();
+			newAdmin.setPassword(passwordEncoder.encode(admin.getPassword()));
+			newAdmin.setEmail(admin.getEmail());
+			newAdmin.setUsername(admin.getUsername());
+			newAdmin.setRole(AdminRole.ROLE_ADMIN);
+			adminRepository.save(newAdmin);;
+			return AdminResponseDto.convertirAdminDto(newAdmin);
+				
+		} catch(Exception e){
+			throw new RuntimeException("Error técnico al guardar el administrador",e);
+		}
+
+
+      }
+
+	@Override
+	public int deleteOne(int idAdmin) {
+		// TODO: QUIERO QUE EL ADMIN CON ID 1 NUNCA SE PUEDA BORRAR
+		if(!adminRepository.existsById(idAdmin))
+			return 0;
 		try {
-			return adminRepository.save(entity);
-		}catch (Exception e) {
-			System.out.println("ERROR : " + e.getMessage());
-			return null;
+				adminRepository.deleteById(idAdmin);
+			return 1;
+		} catch (Exception e){
+			throw new DeleteRestrictionException("No se puede eliminar el administrador con id: " + idAdmin + " porque tiene datos vinculados que lo impiden.");
+
+				
 		}
 	}
 
 	@Override
-	public Admin updateOne(Admin entity) {
-		if (adminRepository.existsById(entity.getIdUser())) {
-			return adminRepository.save(entity);
-		}else
-			return null;
-	}
+	public LoginResponseDto authenticateAdmin(CreateAdminDto loginAdmin) {
+		Admin exist = adminRepository.findByUsername(loginAdmin.getUsername()).orElseThrow(()-> new UnauthorizedException("Username o password incorrecta"));
 
-	@Override
-	public int deleteOne(Integer key) {
-		/*
-		if(adminRepository.existsById(key)) {
-			try {
-				adminRepository.deleteById(key);
-				return 1;
-			} catch (Exception e) {
-				System.out.println("ERROR : " + e.getMessage());
-				return -1;
-			}
+		if(!passwordEncoder.matches(loginAdmin.getPassword(),exist.getPassword())){
+			throw new UnauthorizedException("Username o password incorrecta");
+
 		}
-		return 0;
-		*/
-		return 0;
+		
+		String token = jwtUtil.generateToken(exist.getUsername(), exist.getRole().name());
+		return LoginResponseDto.builder()
+		.token(token)
+		.username(exist.getUsername())
+		.build();
+
 	}
+    
+	
+
+
+		
+		
+    
+	
+
 }

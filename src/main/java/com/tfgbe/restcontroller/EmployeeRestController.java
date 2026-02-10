@@ -14,63 +14,82 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tfgbe.modelo.entities.Employee;
+import com.tfgbe.modelo.dto.CreateEmployeeDto;
+import com.tfgbe.modelo.dto.EmployeeResponseDto;
+import com.tfgbe.modelo.dto.UpdateEmployeeDto;
+import com.tfgbe.modelo.repository.EmployeeRepository;
 import com.tfgbe.modelo.services.EmployeeService;
 
+import jakarta.validation.Valid;
+
+
 @RestController
-@RequestMapping("/employee")
+@RequestMapping("/employees")
 public class EmployeeRestController {
+
+    private final EmployeeRepository employeeRepository;
 
 	@Autowired
 	EmployeeService employeeService;
+
+    EmployeeRestController(EmployeeRepository employeeRepository) {
+        this.employeeRepository = employeeRepository;
+    }
 	
 	@GetMapping
-	public ResponseEntity<List<Employee>> findAll(){
-		return ResponseEntity.status(200).body(employeeService.findAll());
+	public ResponseEntity<?> getAllEmployees() {
+		return new ResponseEntity<List<EmployeeResponseDto>>(employeeService.findAll(),HttpStatus.OK);
 	}
-	
-	@GetMapping("/{id}")
-	public ResponseEntity<?> findById(@PathVariable int id){
-		Employee e = employeeService.findById(id);
-		if (e!= null) {
-			return new ResponseEntity<Employee>(e,HttpStatus.OK);
-		}else {
-			return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
-		}
+
+	@GetMapping("/restaurant")
+	public ResponseEntity<List<EmployeeResponseDto>> getRestaurantEmployees() {
+    return ResponseEntity.ok(
+        employeeService.findMyRestaurantEmployees()
+    );
+}
+
+
+	@GetMapping("/{idEmployee}")
+	public ResponseEntity<?> getEmployeeById(@PathVariable int idEmployee) {
+		return new ResponseEntity<EmployeeResponseDto>(employeeService.findByIdDto(idEmployee),HttpStatus.OK);
 	}
-	
-	@PostMapping
-	public ResponseEntity<?> insertOne(@RequestBody Employee employee){
-		if (employeeService.insertOne(employee)!= null) {
-			return new ResponseEntity<Employee>(employee, HttpStatus.OK);
-		}else {
-			return new ResponseEntity<String>("INSERT ERROR", HttpStatus.BAD_REQUEST);
-		}
-	}
-	
-	@PutMapping("/update/{id}")
-	public ResponseEntity<?> updateOne(@PathVariable int id, @RequestBody Employee employee){
+
+	@PostMapping("/create")
+	public ResponseEntity<?> postCreateEmployee(@RequestBody @Valid CreateEmployeeDto entity) {
 		
-		employee.setIdUser(id);
 		
-		if (employeeService.updateOne(employee)!= null) {
-			return new ResponseEntity<Employee>(employee, HttpStatus.OK);
-		}else {
-			return new ResponseEntity<String>("USER NOT FOUND", HttpStatus.NOT_FOUND);
+		return new ResponseEntity<>(employeeService.insertOne(entity),HttpStatus.CREATED);
+	}
+
+
+	@PutMapping("/update/{idEmployee}")
+	public ResponseEntity<?> updateOneEmployee(@PathVariable int idEmployee,@RequestBody @Valid UpdateEmployeeDto updateEmployee){
+		return new ResponseEntity<>(employeeService.updateOne(idEmployee, updateEmployee),HttpStatus.OK);
+	}
+
+	@DeleteMapping("/delete/{idEmployee}")
+	public ResponseEntity<?> deleteOneAdmin(@PathVariable int idEmployee){
+
+		switch (employeeService.deleteOneEmployee(idEmployee)) {
+			case 1:
+				return new ResponseEntity<>("Eliminado correctamente",HttpStatus.OK);
+				
+			case 0:
+				return new ResponseEntity<>("Empleado no existe",HttpStatus.NOT_FOUND);
+				
+		
+			default:
+				return new ResponseEntity<>("No se puede eliminar Empleado",HttpStatus.BAD_REQUEST);
 		}
+		
 	}
 	
-	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<?> deleteOne(@PathVariable int id){
-		switch (employeeService.deleteOne(id)) {
-		case 1:
-			return new ResponseEntity<String>("DELETED", HttpStatus.OK);
-		case 0:
-			return new ResponseEntity<String>("NOT FOUND", HttpStatus.NOT_FOUND);
-		default:
-			return new ResponseEntity<String>("CAN'T DELETE", HttpStatus.BAD_REQUEST);
-		}
+
+	@PutMapping("/{idEmployee}/shift/{idShift}")
+	public ResponseEntity<EmployeeResponseDto> assignShiftToEmployee(@PathVariable int idEmployee, @PathVariable int idShift){
+		return new ResponseEntity<EmployeeResponseDto>(employeeService.assignShiftToEmployee(idEmployee, idShift),HttpStatus.OK);
 	}
+	
 	
 	
 	

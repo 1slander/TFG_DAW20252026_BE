@@ -31,22 +31,25 @@ import jakarta.persistence.Table;
 public class Employee extends User  {
 
 	
-	@Column(name="id_employee")
-	private String idEmployee;
+	@Column(nullable = false,unique = true,length = 9)
+	private String dni;
 	
 	@Column(name="hourly_wage")
 	private double hourlyWage;
 	
 	@Column(name="hire_date")
 	private LocalDate hireDate;
-	@Enumerated(EnumType.STRING)
-	private EmployeeType employeeType;
-	
-//	@OneToOne //MUCHAS DUDAS SOBRE ESTO
-//	private User user;
+
 	
 	@ManyToOne
-	@JoinColumn(name="id_restaurant")
+	@JoinColumn(name="id_role")
+	private Role role;
+	
+
+	
+	
+	@ManyToOne
+	@JoinColumn(name = "id_restaurant", nullable = true)
 	private Restaurant restaurant;
 	
 	

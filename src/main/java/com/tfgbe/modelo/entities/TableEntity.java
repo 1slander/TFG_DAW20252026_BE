@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,9 +20,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
-@Entity(name="tables")
-public class Table {
+@Entity
+@Table(name = "tables")
+public class TableEntity {
 	
 	@Id
 	@GeneratedValue(strategy =GenerationType.IDENTITY )
@@ -40,6 +41,6 @@ public class Table {
 	private Restaurant restaurant;
 	
 	@Enumerated(EnumType.STRING)
-	private Status status;
+	private TableStatus status;
 	
 }

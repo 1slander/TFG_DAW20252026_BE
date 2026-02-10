@@ -1,42 +1,55 @@
 package com.tfgbe.modelo.entities;
 
-import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+
 import jakarta.persistence.Table;
+
 
 @Data
 @EqualsAndHashCode(callSuper=false)
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
+@Builder
 @Entity
 @Table(name="admins")
-@PrimaryKeyJoinColumn(name="id_user")
-public class Admin extends User {
 
-	@Column(name="can_create_admins")
-	private boolean canCreateAdmins;
+public class Admin{
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name="id_admin")
+	private Integer idAdmin;
+
+	@Column(nullable = false,unique = true)
+	private String username;
+	@Column(nullable = false,unique = true)
+	private String email;
+	@Column(nullable = false)
+	private String password;
+
+	// @Builder.Default
+	// @Column(name="role_name", nullable = false)
+	// private String roleName ="ROLE_ADMIN";
+	@Enumerated(EnumType.STRING)
+	@Column(name="role_name", nullable = false)
+	private AdminRole role;
 	
-	//DUDAS => Aqui no hace falta porque por herencia extendemos de USER.
-	//@OneToOne
-	//private User user;
 	
-	//NO SE SI LO HEMOS HECHO
-	// Aqui si un Admin tiene muchos restaurante tiene que ser una Lista
-	@OneToMany(mappedBy="admin")
-	@JsonIgnore
-	private List<Restaurant> restaurants;
+
+
+	
 }

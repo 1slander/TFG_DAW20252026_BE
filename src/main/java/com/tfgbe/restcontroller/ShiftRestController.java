@@ -15,59 +15,55 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tfgbe.modelo.dto.CreateShiftDto;
+import com.tfgbe.modelo.dto.ShiftResponseDto;
+import com.tfgbe.modelo.dto.UpdateShiftDto;
 import com.tfgbe.modelo.entities.Restaurant;
 import com.tfgbe.modelo.entities.Shift;
 import com.tfgbe.modelo.services.ShiftService;
 
+import jakarta.validation.Valid;
+
 @RestController
-@RequestMapping("/shift")
+@RequestMapping("/shifts")
 public class ShiftRestController {
 
 	@Autowired
 	ShiftService shiftService;
 	
 	@GetMapping
-	public ResponseEntity<List<Shift>> findAll(){
-		return ResponseEntity.status(200).body(shiftService.findAll());	
+	public ResponseEntity<?> findAll(){
+		return new ResponseEntity<>(shiftService.findAll(),HttpStatus.OK);
 	}
 	
-	@GetMapping("/{id}")
-	public ResponseEntity<?> findById(@PathVariable int id){
-		Shift s = shiftService.findById(id);
-		if (s != null) {
-			return new ResponseEntity<Shift>(s,HttpStatus.OK);
-		} else {
-			return new ResponseEntity<String>("SHIFT NOT FOUND", HttpStatus.NOT_FOUND);
-		}
+	@GetMapping("/{idShift}")
+	public ResponseEntity<?> findById(@PathVariable int idShift){
+		
+			return new ResponseEntity<ShiftResponseDto>(shiftService.findById(idShift),HttpStatus.OK);
+		
 	}
 	
 	
 	@PostMapping
-	public ResponseEntity<?> insertOne(@RequestBody Shift shift){
-		if (shiftService.insertOne(shift)!=null) {
-			return new ResponseEntity<Shift>(shift, HttpStatus.OK);
-		}else {
-			return new ResponseEntity<String>("INSERT ERROR", HttpStatus.BAD_REQUEST);
-		}
+	public ResponseEntity<?> postCreateShift(@Valid @RequestBody CreateShiftDto assignShift){
+		
+	
+			return new ResponseEntity<>(shiftService.createShift(assignShift), HttpStatus.CREATED);
+		
 	}
 	
 	
-	@PutMapping("/update/{id}")
-	public ResponseEntity<?> updateOne(@PathVariable int id, @RequestBody Shift shift){
+	@PutMapping("/update/{idShift}")
+	public ResponseEntity<?> updateOne(@PathVariable int idShift, @Valid @RequestBody UpdateShiftDto assignShift){
 		
-		shift.setIdShift(id);
+		return new ResponseEntity<>(shiftService.updateShift(idShift, assignShift),HttpStatus.OK);
 		
-		if(shiftService.updateOne(shift)!= null) {
-			return new ResponseEntity<Shift>(shift,HttpStatus.OK);
-		}else {
-			return new ResponseEntity<String>("INSERT ERROR", HttpStatus.BAD_REQUEST);
-		}
 	}
 	
 	
-	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<?> deleteOne(@PathVariable int id){
-		switch (shiftService.deleteOne(id)) {
+	@DeleteMapping("/delete/{idShift}")
+	public ResponseEntity<?> deleteOne(@PathVariable int idShift){
+		switch (shiftService.deleteShift(idShift)) {
 		case 1:
 			return new ResponseEntity<String>("DELETED", HttpStatus.OK);
 		case 0:
