@@ -65,7 +65,7 @@ public EmployeeResponseDto findByIdDto(int idEmployee) {
 
     Employee authEmployee = getAuthenticatedEmployee();
     boolean isAdmin = hasAuthority("ROLE_ADMIN");
-
+    
     Employee employee = employeeRepository.findById(idEmployee)
         .orElseThrow(() ->
             new NotFoundException(
@@ -124,6 +124,12 @@ public EmployeeResponseDto findByIdDto(int idEmployee) {
 
 	}
 
+
+    //////////////////////
+    ///  CREATE        ///
+    ///              ///
+    /// ////////////////
+
 	@Override
 	public EmployeeResponseDto insertOne(CreateEmployeeDto employee) {
 
@@ -136,18 +142,20 @@ public EmployeeResponseDto findByIdDto(int idEmployee) {
 
    
     RolesEnum rolSolicitado = RoleUtils.roleNormalizer(employee.getRole());
-
+    Employee main = null;
+    boolean isAdmin=hasAuthority("ROLE_ADMIN");
     
-    boolean isAdmin = SecurityContextHolder.getContext()
-        .getAuthentication()
-        .getAuthorities()
-        .stream()
-        .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+ 
 
         
    
     if (!isAdmin) {
 
+        main = getAuthenticatedEmployee();
+
+        if(main.getRestaurant()==null){
+            throw new NotFoundException("El usuario no tiene un restaurante asignado: " + main.getDni());
+        }
        
         RolesEnum rolCreador = SecurityContextHolder.getContext()
             .getAuthentication()
@@ -175,13 +183,7 @@ public EmployeeResponseDto findByIdDto(int idEmployee) {
 
    
     try {
-        
- 
-        Employee main  = getAuthenticatedEmployee();
-
-        if(main.getRestaurant()==null && !isAdmin){
-            throw new NotFoundException("El usuario no tiene un restaurante asignado: " + main.getDni());
-        }
+                
 
         Employee newEmployee = new Employee();
         newEmployee.setPassword(passwordEncoder.encode(employee.getPassword()));
@@ -393,11 +395,18 @@ public List<EmployeeResponseDto> findMyRestaurantEmployees() {
     }
 
       private boolean hasAuthority(String role) {
-        return SecurityContextHolder.getContext()
-            .getAuthentication()
-            .getAuthorities()
-            .stream()
-            .anyMatch(a -> a.getAuthority().equals(role));
+
+       return SecurityContextHolder.getContext()
+        .getAuthentication()
+        .getAuthorities()
+        .stream()
+        .anyMatch(auth -> auth.getAuthority().equals(role));
+
+    //    SecurityContextHolder.getContext()
+    //         .getAuthentication()
+    //         .getAuthorities()
+    //         .stream()
+    //         .anyMatch(a -> a.getAuthority().equals(role));
     }
 
 
