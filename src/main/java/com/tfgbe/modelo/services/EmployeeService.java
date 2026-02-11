@@ -24,6 +24,7 @@ public interface EmployeeService {
 
     List<EmployeeResponseDto> findMyRestaurantEmployees();
    EmployeeResponseDto assignShiftToEmployee(int employeeId, int shiftId);
+   List<EmployeeResponseDto> getEmployeesByShift(Shift shift);
     
 
 }

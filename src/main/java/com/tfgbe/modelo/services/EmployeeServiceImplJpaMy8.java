@@ -429,8 +429,11 @@ public List<EmployeeResponseDto> findMyRestaurantEmployees() {
                 new NotFoundException("No existe Shift con ID: " + shift)
         );    
 
+        // Esto puede que pete.
+
         Employee employeeLogged = getAuthenticatedEmployee();
         boolean isAdmin = hasAuthority("ROLE_ADMIN");
+        
 
         if(employeeLogged.getIdUser() == employeeToAssign.getIdUser())
             throw new ForbiddenException("No puedes cambiar tu propio shift");
@@ -483,6 +486,13 @@ public List<EmployeeResponseDto> findMyRestaurantEmployees() {
             return EmployeeMapper.convertirEmployeeDto(employeeLogged);
             
             }
+
+            // TODO TERMINAR DE BUSCAR EMPLEADOS EN TURNO
+    @Override
+    public List<EmployeeResponseDto> getEmployeesByShift(Shift shift) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getEmployeesByShift'");
+    }
         
         
         
