@@ -3,11 +3,14 @@ package com.tfgbe.modelo.services;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.tfgbe.exceptions.AlreadyExistsException;
 import com.tfgbe.exceptions.DeleteRestrictionException;
+import com.tfgbe.exceptions.ForbiddenException;
 import com.tfgbe.exceptions.NotFoundException;
 import com.tfgbe.exceptions.UnauthorizedException;
 import com.tfgbe.modelo.dto.LoginResponseDto;
@@ -66,9 +69,26 @@ public class AdminServiceImplJpaMy8 implements AdminService{
 
 	@Override
 	public int deleteOne(int idAdmin) {
-		// TODO: QUIERO QUE EL ADMIN CON ID 1 NUNCA SE PUEDA BORRAR
 		if(!adminRepository.existsById(idAdmin))
 			return 0;
+		
+		if(idAdmin==1){
+			throw new ForbiddenException("No se puede eliminar el administrador raíz del sistema.");
+		}
+
+		String adminLogged = SecurityContextHolder.getContext().getAuthentication().getName();
+
+		 Admin admin = adminRepository.findByUsername(adminLogged)
+        .orElseThrow(() ->
+            new UnauthorizedException("Admin autenticado no encontrado")
+        );
+
+    	if (admin.getIdAdmin().equals(idAdmin)) {
+      	  throw new ForbiddenException(
+            "No puedes eliminar tu propia cuenta."
+        );
+    }
+
 		try {
 				adminRepository.deleteById(idAdmin);
 			return 1;
