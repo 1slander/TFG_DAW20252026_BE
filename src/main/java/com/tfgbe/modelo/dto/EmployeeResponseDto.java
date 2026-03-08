@@ -18,11 +18,10 @@ public class EmployeeResponseDto {
     private String dni;
     // Si necesitamos el role para logica, lo idea seria cambiar a Role role
     private String role;
-    private double hourlyWage;
+    private Double hourlyWage;
     private String restaurant;
     private String shift;
 
     // Todo: Add Restaurant y Shift
-
 
 }

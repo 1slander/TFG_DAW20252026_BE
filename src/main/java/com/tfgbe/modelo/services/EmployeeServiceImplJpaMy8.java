@@ -4,9 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import javax.management.RuntimeErrorException;
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,202 +33,68 @@ import com.tfgbe.util.RoleUtils;
 import com.tfgbe.util.RolesEnum;
 
 @Service
-public class EmployeeServiceImplJpaMy8 implements EmployeeService{
+public class EmployeeServiceImplJpaMy8 implements EmployeeService {
 
-	@Autowired
-	EmployeeRepository employeeRepository;
-	@Autowired
-	ShiftRepository shiftRepository;
+    @Autowired
+    EmployeeRepository employeeRepository;
+    @Autowired
+    ShiftRepository shiftRepository;
 
-	@Autowired
-	RoleRepository roleRepo;
+    @Autowired
+    RoleRepository roleRepo;
 
-		@Autowired
-	PasswordEncoder passwordEncoder;
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
-	@Autowired
-	JwtUtil jwtUtil;
+    @Autowired
+    JwtUtil jwtUtil;
 
-	
+    @Override
+    public List<EmployeeResponseDto> findAll() {
 
-	@Override
-	public List<EmployeeResponseDto> findAll() {
-		
-		return employeeRepository.findAll().stream().map(employee -> EmployeeMapper.convertirEmployeeDto(employee)).toList();
-	}
-
-	@Override
-public EmployeeResponseDto findByIdDto(int idEmployee) {
-
-    Employee authEmployee = getAuthenticatedEmployee();
-    boolean isAdmin = hasAuthority("ROLE_ADMIN");
-    
-    Employee employee = employeeRepository.findById(idEmployee)
-        .orElseThrow(() ->
-            new NotFoundException(
-                "No existe el Empleado con ID: " + idEmployee));
-
-    if (!isAdmin) {
-        if (authEmployee.getRestaurant() == null ||
-            employee.getRestaurant() == null ||
-            !authEmployee.getRestaurant().getIdRestaurant()
-                .equals(employee.getRestaurant().getIdRestaurant())) {
-
-            throw new ForbiddenException(
-                "No puedes ver empleados de otro restaurante");
-        }
+        return employeeRepository.findAll().stream().map(employee -> EmployeeMapper.convertirEmployeeDto(employee))
+                .toList();
     }
 
-    return EmployeeMapper.convertirEmployeeDto(employee);
-}
+    @Override
+    public EmployeeResponseDto findByIdDto(int idEmployee) {
 
-	@Override
-	public int deleteOneEmployee(int idEmployee) {
-		Employee employee = employeeRepository.findById(idEmployee).orElse(null);
-		if(employee==null){
-			return 0;
+        Employee authEmployee = getAuthenticatedEmployee();
+        boolean isAdmin = hasAuthority("ROLE_ADMIN");
 
-		}
-		boolean isAdmin = SecurityContextHolder.getContext()
-        .getAuthentication()
-        .getAuthorities()
-        .stream()
-        .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+        Employee employee = employeeRepository.findById(idEmployee)
+                .orElseThrow(() -> new NotFoundException(
+                        "No existe el Empleado con ID: " + idEmployee));
 
-				
-		RolesEnum rolSolicitado = RoleUtils.roleNormalizer(employee.getRole().getRoleName());
-		RolesEnum rolCreador = SecurityContextHolder.getContext()
-            .getAuthentication()
-            .getAuthorities()
-            .stream()
-            .map(auth -> auth.getAuthority())
-            .findFirst()
-            .map(RoleUtils::roleNormalizer)
-            .orElseThrow(() -> new NoRoleException("Usuario sin rol"));
+        if (!isAdmin) {
+            if (authEmployee.getRestaurant() == null ||
+                    employee.getRestaurant() == null ||
+                    !authEmployee.getRestaurant().getIdRestaurant()
+                            .equals(employee.getRestaurant().getIdRestaurant())) {
 
-		if(isAdmin || (rolSolicitado.getNivel() < rolCreador.getNivel()&& workSameRestaurant(employee) )){
+                throw new ForbiddenException(
+                        "No puedes ver empleados de otro restaurante");
+            }
+        }
 
-			try{
-				employeeRepository.deleteById(idEmployee);
-				return 1;
-			} catch(Exception e){
-				throw new DeleteRestrictionException("No se puede eliminar el empleado con ID: " + idEmployee);
-			}
-		} else {
-			
-			throw new ForbiddenException("No puedes borrar a ese usuario, ya que su nivel es igual o superior al tuyo.");
-		}
-
-	}
-
-
-    //////////////////////
-    ///  CREATE        ///
-    ///              ///
-    /// ////////////////
-
-	@Override
-	public EmployeeResponseDto insertOne(CreateEmployeeDto employee) {
-
-   
-    	if (employeeRepository.existsByDni(employee.getDni())) {
-        	throw new AlreadyExistsException(
-            	"El empleado con DNI: " + employee.getDni() + " ya existe."
-        );
+        return EmployeeMapper.convertirEmployeeDto(employee);
     }
 
-   
-    RolesEnum rolSolicitado = RoleUtils.roleNormalizer(employee.getRole());
-    Employee main = null;
-    boolean isAdmin=hasAuthority("ROLE_ADMIN");
-    
- 
+    @Override
+    public int deleteOneEmployee(int idEmployee) {
+        Employee employee = employeeRepository.findById(idEmployee).orElse(null);
+        if (employee == null) {
+            return 0;
 
-        
-   
-    if (!isAdmin) {
-
-        main = getAuthenticatedEmployee();
-
-        if(main.getRestaurant()==null){
-            throw new NotFoundException("El usuario no tiene un restaurante asignado: " + main.getDni());
         }
-       
+        boolean isAdmin = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+        RolesEnum rolSolicitado = RoleUtils.roleNormalizer(employee.getRole().getRoleName());
         RolesEnum rolCreador = SecurityContextHolder.getContext()
-            .getAuthentication()
-            .getAuthorities()
-            .stream()
-            .map(auth -> auth.getAuthority())
-            .findFirst()
-            .map(RoleUtils::roleNormalizer)
-            .orElseThrow(() -> new NoRoleException("Usuario sin rol"));
-
-        if (rolSolicitado.getNivel() >= rolCreador.getNivel()) {
-            throw new ForbiddenException(
-                "No puedes crear un empleado con el rol " + rolSolicitado + " tu nivel es menor que el del rol solicitado."
-            );
-        }
-    }
-
-    
-    String roleBd = "ROLE_" + rolSolicitado.name();
-    Role roleEntity = roleRepo.findByRoleName(roleBd);
-
-	if(roleEntity==null){
-		throw new NoRoleException("El rol no existe: " + roleEntity);
-	}
-
-   
-    try {
-                
-
-        Employee newEmployee = new Employee();
-        newEmployee.setPassword(passwordEncoder.encode(employee.getPassword()));
-        newEmployee.setDni(employee.getDni());
-        newEmployee.setEmail(employee.getEmail());
-        newEmployee.setFirstName(employee.getFirstName());
-        newEmployee.setLastName(employee.getLastName());
-		if(isAdmin){
-			Role roleOwner = roleRepo.findByRoleName("ROLE_OWNER");
-			newEmployee.setRole(roleOwner);
-
-		} else {
-            newEmployee.setRestaurant(main.getRestaurant());
-			newEmployee.setRole(roleEntity);
-		}
-		newEmployee.setCreatedAt(LocalDate.now());
-		newEmployee.setHireDate(LocalDate.now());
-        employeeRepository.save(newEmployee);
-        return EmployeeMapper.convertirEmployeeDto(newEmployee);
-
-    } catch (Exception e) {
-        throw new RuntimeException("Error técnico al guardar el empleado", e);
-    }
-
-
-}
-
- // UPDATE
-
-	@Override
-	public EmployeeResponseDto updateOne(int idEmployee,UpdateEmployeeDto updateEmployeeDto) {
-		
-    Employee employeeUpdate = employeeRepository.findById(idEmployee)
-            .orElseThrow(() ->
-                    new NotFoundException("Empleado con id: " + idEmployee + " no existe.")
-            );
-
-   
-    boolean isAdmin = SecurityContextHolder.getContext()
-            .getAuthentication()
-            .getAuthorities()
-            .stream()
-            .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
-
-    
-    RolesEnum rolCreador = null;
-    if (!isAdmin) {
-        rolCreador = SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getAuthorities()
                 .stream()
@@ -239,178 +102,267 @@ public EmployeeResponseDto findByIdDto(int idEmployee) {
                 .findFirst()
                 .map(RoleUtils::roleNormalizer)
                 .orElseThrow(() -> new NoRoleException("Usuario sin rol"));
-    }
 
-    
-    String dniAuth = SecurityContextHolder.getContext()
-            .getAuthentication()
-            .getName();
+        if (isAdmin || (rolSolicitado.getNivel() < rolCreador.getNivel() && workSameRestaurant(employee))) {
 
-    Employee authEmployee = employeeRepository.findByDni(dniAuth)
-            .orElseThrow(() ->
-                    new NotFoundException("Empleado autenticado no existe")
-            );
-
-    boolean isSelfUpdate = authEmployee.getDni().equals(employeeUpdate.getDni());
-
-    
-    RolesEnum rolEmpleado = RoleUtils.roleNormalizer(
-            employeeUpdate.getRole().getRoleName()
-    );
-
-    
-    if (!isAdmin && rolEmpleado.getNivel() >= rolCreador.getNivel()) {
-        throw new ForbiddenException(
-                "No puedes actualizar un empleado con el rol " + rolEmpleado +
-                " tu nivel es menor o igual"
-        );
-    }
-
-
-
-    if (updateEmployeeDto.getFirstName() != null) {
-        employeeUpdate.setFirstName(updateEmployeeDto.getFirstName());
-    }
-
-    if (updateEmployeeDto.getLastName() != null) {
-        employeeUpdate.setLastName(updateEmployeeDto.getLastName());
-    }
-
-    if (updateEmployeeDto.getEmail() != null) {
-        employeeUpdate.setEmail(updateEmployeeDto.getEmail());
-    }
-
-    if (updateEmployeeDto.getIsActive() != null) {
-        employeeUpdate.setActive(updateEmployeeDto.getIsActive());
-    }
-
-   
-    if (updateEmployeeDto.getHourlyWage() != null) {
-
-        if (isAdmin ||
-            rolCreador == RolesEnum.OWNER ||
-            rolCreador == RolesEnum.MANAGER) {
-
-            employeeUpdate.setHourlyWage(updateEmployeeDto.getHourlyWage());
-
+            try {
+                employeeRepository.deleteById(idEmployee);
+                return 1;
+            } catch (Exception e) {
+                throw new DeleteRestrictionException("No se puede eliminar el empleado con ID: " + idEmployee);
+            }
         } else {
-            throw new ForbiddenException("No puedes modificar el salario");
+
+            throw new ForbiddenException(
+                    "No puedes borrar a ese usuario, ya que su nivel es igual o superior al tuyo.");
         }
+
     }
 
+    //////////////////////
+    /// CREATE ///
+    /// ///
+    /// ////////////////
 
-    if (updateEmployeeDto.getRole() != null) {
+    @Override
+    public EmployeeResponseDto insertOne(CreateEmployeeDto employee) {
 
-        
-        if (isSelfUpdate && !isAdmin) {
-            throw new ForbiddenException("No puedes cambiar tu propio rol");
+        if (employeeRepository.existsByDni(employee.getDni())) {
+            throw new AlreadyExistsException(
+                    "El empleado con DNI: " + employee.getDni() + " ya existe.");
         }
 
-      
-        if (!isAdmin && rolCreador != RolesEnum.OWNER) {
-            throw new ForbiddenException("Solo ADMIN u OWNER pueden cambiar el rol");
+        RolesEnum rolSolicitado = RoleUtils.roleNormalizer(employee.getRole());
+        Employee main = null;
+        boolean isAdmin = hasAuthority("ROLE_ADMIN");
+
+        if (!isAdmin) {
+
+            main = getAuthenticatedEmployee();
+
+            if (main.getRestaurant() == null) {
+                throw new NotFoundException("El usuario no tiene un restaurante asignado: " + main.getDni());
+            }
+
+            RolesEnum rolCreador = SecurityContextHolder.getContext()
+                    .getAuthentication()
+                    .getAuthorities()
+                    .stream()
+                    .map(auth -> auth.getAuthority())
+                    .findFirst()
+                    .map(RoleUtils::roleNormalizer)
+                    .orElseThrow(() -> new NoRoleException("Usuario sin rol"));
+
+            if (rolSolicitado.getNivel() >= rolCreador.getNivel()) {
+                throw new ForbiddenException(
+                        "No puedes crear un empleado con el rol " + rolSolicitado
+                                + " tu nivel es menor que el del rol solicitado.");
+            }
         }
 
-        RolesEnum nuevoRol = RoleUtils.roleNormalizer(updateEmployeeDto.getRole());
-
-       
-        if (!isAdmin && nuevoRol.getNivel() >= rolCreador.getNivel()) {
-            throw new ForbiddenException(
-                    "No puedes asignar el rol " + nuevoRol +
-                    " porque es igual o superior al tuyo"
-            );
-        }
-
-        String roleBd = "ROLE_" + nuevoRol.name();
-
+        String roleBd = "ROLE_" + rolSolicitado.name();
         Role roleEntity = roleRepo.findByRoleName(roleBd);
 
         if (roleEntity == null) {
-            throw new NotFoundException("No existe el role: " + nuevoRol);
+            throw new NoRoleException("El rol no existe: " + roleBd);
         }
 
-        employeeUpdate.setRole(roleEntity);
+        try {
+
+            Employee newEmployee = new Employee();
+            newEmployee.setPassword(passwordEncoder.encode(employee.getPassword()));
+            newEmployee.setDni(employee.getDni());
+            newEmployee.setEmail(employee.getEmail());
+            newEmployee.setFirstName(employee.getFirstName());
+            newEmployee.setLastName(employee.getLastName());
+            newEmployee.setHourlyWage(employee.getHourlyWage() != null ? employee.getHourlyWage() : 0.0);
+            if (isAdmin) {
+                Role roleOwner = roleRepo.findByRoleName("ROLE_OWNER");
+                newEmployee.setRole(roleOwner);
+
+            } else {
+                newEmployee.setRestaurant(main.getRestaurant());
+                newEmployee.setRole(roleEntity);
+            }
+            newEmployee.setCreatedAt(LocalDate.now());
+            newEmployee.setHireDate(LocalDate.now());
+            employeeRepository.save(newEmployee);
+            return EmployeeMapper.convertirEmployeeDto(newEmployee);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error técnico al guardar el empleado", e);
+        }
+
     }
 
-    
-    employeeUpdate.setUpdatedAt(LocalDate.now());
-    employeeRepository.save(employeeUpdate);
+    // UPDATE
 
-    return EmployeeMapper.convertirEmployeeDto(employeeUpdate);
-}
+    @Override
+    public EmployeeResponseDto updateOne(int idEmployee, UpdateEmployeeDto updateEmployeeDto) {
 
+        Employee employeeUpdate = employeeRepository.findById(idEmployee)
+                .orElseThrow(() -> new NotFoundException("Empleado con id: " + idEmployee + " no existe."));
 
+        boolean isAdmin = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
 
+        RolesEnum rolCreador = null;
+        if (!isAdmin) {
+            rolCreador = SecurityContextHolder.getContext()
+                    .getAuthentication()
+                    .getAuthorities()
+                    .stream()
+                    .map(auth -> auth.getAuthority())
+                    .findFirst()
+                    .map(RoleUtils::roleNormalizer)
+                    .orElseThrow(() -> new NoRoleException("Usuario sin rol"));
+        }
 
+        String dniAuth = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
 
-@Override
-public List<EmployeeResponseDto> findMyRestaurantEmployees() {
+        Employee authEmployee = employeeRepository.findByDni(dniAuth)
+                .orElseThrow(() -> new NotFoundException("Empleado autenticado no existe"));
 
-    Employee authEmployee = getAuthenticatedEmployee();
+        boolean isSelfUpdate = authEmployee.getDni().equals(employeeUpdate.getDni());
 
-    if (authEmployee.getRestaurant() == null) {
-        throw new ForbiddenException(
-            "El empleado no tiene restaurante asignado");
+        RolesEnum rolEmpleado = RoleUtils.roleNormalizer(
+                employeeUpdate.getRole().getRoleName());
+
+        if (!isAdmin && rolEmpleado.getNivel() >= rolCreador.getNivel()) {
+            throw new ForbiddenException(
+                    "No puedes actualizar un empleado con el rol " + rolEmpleado +
+                            " tu nivel es menor o igual");
+        }
+
+        if (updateEmployeeDto.getFirstName() != null) {
+            employeeUpdate.setFirstName(updateEmployeeDto.getFirstName());
+        }
+
+        if (updateEmployeeDto.getLastName() != null) {
+            employeeUpdate.setLastName(updateEmployeeDto.getLastName());
+        }
+
+        if (updateEmployeeDto.getEmail() != null) {
+            employeeUpdate.setEmail(updateEmployeeDto.getEmail());
+        }
+
+        if (updateEmployeeDto.getIsActive() != null) {
+            employeeUpdate.setActive(updateEmployeeDto.getIsActive());
+        }
+
+        if (updateEmployeeDto.getHourlyWage() != null) {
+
+            if (isAdmin ||
+                    rolCreador == RolesEnum.OWNER ||
+                    rolCreador == RolesEnum.MANAGER) {
+
+                employeeUpdate.setHourlyWage(updateEmployeeDto.getHourlyWage());
+
+            } else {
+                throw new ForbiddenException("No puedes modificar el salario");
+            }
+        }
+
+        if (updateEmployeeDto.getRole() != null) {
+
+            if (isSelfUpdate && !isAdmin) {
+                throw new ForbiddenException("No puedes cambiar tu propio rol");
+            }
+
+            if (!isAdmin && rolCreador != RolesEnum.OWNER) {
+                throw new ForbiddenException("Solo ADMIN u OWNER pueden cambiar el rol");
+            }
+
+            RolesEnum nuevoRol = RoleUtils.roleNormalizer(updateEmployeeDto.getRole());
+
+            if (!isAdmin && nuevoRol.getNivel() >= rolCreador.getNivel()) {
+                throw new ForbiddenException(
+                        "No puedes asignar el rol " + nuevoRol +
+                                " porque es igual o superior al tuyo");
+            }
+
+            String roleBd = "ROLE_" + nuevoRol.name();
+
+            Role roleEntity = roleRepo.findByRoleName(roleBd);
+
+            if (roleEntity == null) {
+                throw new NotFoundException("No existe el role: " + nuevoRol);
+            }
+
+            employeeUpdate.setRole(roleEntity);
+        }
+
+        employeeUpdate.setUpdatedAt(LocalDate.now());
+        employeeRepository.save(employeeUpdate);
+
+        return EmployeeMapper.convertirEmployeeDto(employeeUpdate);
     }
 
-    return employeeRepository
-        .findByRestaurant(authEmployee.getRestaurant())
-        .stream()
-        .map(EmployeeMapper::convertirEmployeeDto)
-        .toList();
-}
-	
+    @Override
+    public List<EmployeeResponseDto> findMyRestaurantEmployees() {
 
-	
+        Employee authEmployee = getAuthenticatedEmployee();
 
+        if (authEmployee.getRestaurant() == null) {
+            throw new ForbiddenException(
+                    "El empleado no tiene restaurante asignado");
+        }
 
+        return employeeRepository
+                .findByRestaurant(authEmployee.getRestaurant())
+                .stream()
+                .map(EmployeeMapper::convertirEmployeeDto)
+                .toList();
+    }
 
+    @Override
+    public LoginResponseDto authenticateEmployee(CreateEmployeeDto loginEmployee) {
+        Employee exist = employeeRepository.findByDni(loginEmployee.getDni())
+                .orElseThrow(() -> new NotFoundException("No se encontró empleado con DNI: " + loginEmployee.getDni()));
 
+        if (!passwordEncoder.matches(loginEmployee.getPassword(), exist.getPassword())) {
+            throw new UnauthorizedException("Usuario o password incorrecto");
+        }
 
-	@Override
-	public LoginResponseDto authenticateEmployee(CreateEmployeeDto loginEmployee) {
-		Employee exist = employeeRepository.findByDni(loginEmployee.getDni()).orElseThrow(()->new NotFoundException("No se encontró empleado con DNI: "+ loginEmployee.getDni()));
+        String token = jwtUtil.generateToken(exist.getDni(), exist.getRole().getRoleName());
+        return LoginResponseDto.builder()
+                .token(token)
+                .username(exist.getDni())
+                .build();
 
-		if(!passwordEncoder.matches(loginEmployee.getPassword(),exist.getPassword())){
-			throw new UnauthorizedException("Usuario o password incorrecto");
-		}
+    }
 
-		String token = jwtUtil.generateToken(exist.getDni(), exist.getRole().getRoleName());
-		return LoginResponseDto.builder()
-		.token(token)
-		.username(exist.getDni())
-		.build();
-
-
-}
-
-  private Employee getAuthenticatedEmployee() {
+    private Employee getAuthenticatedEmployee() {
 
         String dni = SecurityContextHolder.getContext()
-            .getAuthentication()
-            .getName();
+                .getAuthentication()
+                .getName();
 
         return employeeRepository.findByDni(dni)
-            .orElseThrow(() -> new UnauthorizedException("Usuario no autenticado"));
+                .orElseThrow(() -> new UnauthorizedException("Usuario no autenticado"));
     }
 
-      private boolean hasAuthority(String role) {
+    private boolean hasAuthority(String role) {
 
-       return SecurityContextHolder.getContext()
-        .getAuthentication()
-        .getAuthorities()
-        .stream()
-        .anyMatch(auth -> auth.getAuthority().equals(role));
+        return SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .stream()
+                .anyMatch(auth -> auth.getAuthority().equals(role));
 
-    //    SecurityContextHolder.getContext()
-    //         .getAuthentication()
-    //         .getAuthorities()
-    //         .stream()
-    //         .anyMatch(a -> a.getAuthority().equals(role));
+        // SecurityContextHolder.getContext()
+        // .getAuthentication()
+        // .getAuthorities()
+        // .stream()
+        // .anyMatch(a -> a.getAuthority().equals(role));
     }
 
-
-    private boolean workSameRestaurant(Employee employee){
+    private boolean workSameRestaurant(Employee employee) {
         Employee main = getAuthenticatedEmployee();
 
         return main.getRestaurant().getIdRestaurant().equals(employee.getRestaurant().getIdRestaurant());
@@ -420,71 +372,57 @@ public List<EmployeeResponseDto> findMyRestaurantEmployees() {
     @Override
     public EmployeeResponseDto assignShiftToEmployee(int employee, int shift) {
 
-         Employee employeeToAssign = employeeRepository.findById(employee)
-        .orElseThrow(() ->
-            new NotFoundException(
-                "No existe el Empleado con ID: " + employee));
+        Employee employeeToAssign = employeeRepository.findById(employee)
+                .orElseThrow(() -> new NotFoundException(
+                        "No existe el Empleado con ID: " + employee));
 
-         Shift shiftToAssign = shiftRepository.findById(shift).orElseThrow(()->
-                new NotFoundException("No existe Shift con ID: " + shift)
-        );    
+        Shift shiftToAssign = shiftRepository.findById(shift)
+                .orElseThrow(() -> new NotFoundException("No existe Shift con ID: " + shift));
 
         Employee employeeLogged = getAuthenticatedEmployee();
         boolean isAdmin = hasAuthority("ROLE_ADMIN");
 
-        if(employeeLogged.getIdUser() == employeeToAssign.getIdUser())
+        if (employeeLogged.getIdUser() == employeeToAssign.getIdUser())
             throw new ForbiddenException("No puedes cambiar tu propio shift");
 
-        if(employeeToAssign.getRestaurant()==null || shiftToAssign.getRestaurant()==null){
+        if (employeeToAssign.getRestaurant() == null || shiftToAssign.getRestaurant() == null) {
             throw new ForbiddenException("Empleado o turno sin restaraunte asignado");
         }
 
-        if(!employeeToAssign.getRestaurant().getIdRestaurant().equals(shiftToAssign.getRestaurant().getIdRestaurant()))
-                throw new BadRequestException("Empleado y shift no pertenecen al mismo restaurante.");
+        if (!employeeToAssign.getRestaurant().getIdRestaurant().equals(shiftToAssign.getRestaurant().getIdRestaurant()))
+            throw new BadRequestException("Empleado y shift no pertenecen al mismo restaurante.");
 
-         
         RolesEnum rolCreador = null;
         if (!isAdmin) {
 
-            if(employeeLogged.getRestaurant()==null){
+            if (employeeLogged.getRestaurant() == null) {
                 throw new ForbiddenException("No tienes restaurante asignado");
             }
 
-
-
             rolCreador = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getAuthorities()
-                .stream()
-                .map(auth -> auth.getAuthority())
-                .findFirst()
-                .map(RoleUtils::roleNormalizer)
-                .orElseThrow(() -> new NoRoleException("Usuario sin rol"));
+                    .getAuthentication()
+                    .getAuthorities()
+                    .stream()
+                    .map(auth -> auth.getAuthority())
+                    .findFirst()
+                    .map(RoleUtils::roleNormalizer)
+                    .orElseThrow(() -> new NoRoleException("Usuario sin rol"));
 
+            RolesEnum rolEmpleado = RoleUtils.roleNormalizer(
+                    employeeToAssign.getRole().getRoleName());
 
-             RolesEnum rolEmpleado = RoleUtils.roleNormalizer(
-                employeeToAssign.getRole().getRoleName());
-
-
-                if (rolEmpleado.getNivel() >= rolCreador.getNivel()) {
+            if (rolEmpleado.getNivel() >= rolCreador.getNivel()) {
                 throw new ForbiddenException(
                         "No puedes actualizar un empleado con el rol " + rolEmpleado +
-                        " tu nivel es menor o igual"
-                        );
-                    }
-
-             }
-
-    
-
-     
-            employeeToAssign.setShift(shiftToAssign);
-            employeeRepository.save(employeeToAssign);
-            return EmployeeMapper.convertirEmployeeDto(employeeLogged);
-            
+                                " tu nivel es menor o igual");
             }
-        
-        
-        
+
+        }
+
+        employeeToAssign.setShift(shiftToAssign);
+        employeeRepository.save(employeeToAssign);
+        return EmployeeMapper.convertirEmployeeDto(employeeLogged);
+
+    }
 
 }
