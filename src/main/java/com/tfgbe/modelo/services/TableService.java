@@ -25,4 +25,6 @@ public interface TableService {
     List<TableResponseDto> findByRestaurant(Long idRestaurant);
 
     int deleteTable(int idTable);
+
+    void updatePosition(Integer tableId, Integer posX, Integer posY);
 }

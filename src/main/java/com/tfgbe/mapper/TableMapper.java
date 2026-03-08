@@ -24,6 +24,8 @@ public class TableMapper {
                     ? table.getRestaurant().getRestaurantName()
                     : null
             )
+            .posX(table.getPosX())
+            .posY(table.getPosY())
             .build();
     }
 

@@ -18,4 +18,7 @@ public class TableResponseDto {
 
     private Long idRestaurant;
     private String restaurantName;
+
+    private Integer posX;
+    private Integer posY;
 }

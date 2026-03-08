@@ -129,4 +129,17 @@ public class TableRestController {
                 .body("Error interno al intentar eliminar la mesa.");
     }
 }
+
+
+
+@PutMapping("/update/position/{idTable}")
+public ResponseEntity<Void> updatePosition(
+        @PathVariable Integer idTable,
+        @RequestParam Integer posX,
+        @RequestParam Integer posY) {
+
+    tableService.updatePosition(idTable, posX, posY);
+    return ResponseEntity.ok().build();
+}
+
 }

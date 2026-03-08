@@ -42,5 +42,11 @@ public class TableEntity {
 	
 	@Enumerated(EnumType.STRING)
 	private TableStatus status;
+
+	@Column(name = "pos_x")
+	private Integer posX;
+
+	@Column(name = "pos_y")
+	private Integer posY;
 	
 }

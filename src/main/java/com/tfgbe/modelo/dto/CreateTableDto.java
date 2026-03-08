@@ -18,4 +18,7 @@ public class CreateTableDto {
     @NotNull(message = "La capacidad de la mesa es obligatoria")
     @Min(value = 1, message = "La capacidad debe ser mayor que 0")
     private Integer tableCapacity;
+
+    private Integer posX;
+    private Integer posY;
 }

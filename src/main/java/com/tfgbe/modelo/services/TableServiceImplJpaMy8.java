@@ -245,4 +245,16 @@ public class TableServiceImplJpaMy8 implements TableService {
             "No puedes operar sobre mesas de otro restaurante");
     }
 }
+
+public void updatePosition(Integer tableId, Integer posX, Integer posY) {
+
+    TableEntity table = tableRepository.findById(tableId)
+        .orElseThrow(() -> new NotFoundException("Mesa no encontrada"));
+
+    table.setPosX(posX);
+    table.setPosY(posY);
+
+    tableRepository.save(table);
+}
+
 }
