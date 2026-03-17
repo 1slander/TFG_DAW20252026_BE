@@ -21,4 +21,8 @@ public class TableResponseDto {
 
     private Integer posX;
     private Integer posY;
+
+    private Integer idEmployee;
+    private String employeeName;
+    private Integer idAssignment;
 }

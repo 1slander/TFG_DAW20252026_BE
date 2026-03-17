@@ -16,13 +16,13 @@ public interface TableService {
 
 	 TableResponseDto createTable(Long idRestaurant, CreateTableDto dto);
 
-    TableResponseDto updateTable(int idTable, UpdateTableDto dto);
-
     TableResponseDto findById(int idTable);
 
     List<TableResponseDto> findAll();
 
     List<TableResponseDto> findByRestaurant(Long idRestaurant);
+
+    TableResponseDto updateTable(int idTable, UpdateTableDto dto);
 
     int deleteTable(int idTable);
 

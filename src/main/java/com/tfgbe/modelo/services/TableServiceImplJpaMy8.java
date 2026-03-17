@@ -19,6 +19,7 @@ import com.tfgbe.modelo.entities.TableEntity;
 import com.tfgbe.modelo.entities.TableStatus;
 import com.tfgbe.modelo.repository.EmployeeRepository;
 import com.tfgbe.modelo.repository.RestaurantRepository;
+import com.tfgbe.modelo.repository.TableAssignmentRepository;
 import com.tfgbe.modelo.repository.TableRepository;
 
 @Service
@@ -32,6 +33,9 @@ public class TableServiceImplJpaMy8 implements TableService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private TableAssignmentRepository tableAssignmentRepository;
 
     @Override
     public TableResponseDto createTable(Long idRestaurant, CreateTableDto dto) {
@@ -55,7 +59,9 @@ public class TableServiceImplJpaMy8 implements TableService {
 
     tableRepository.save(table);
 
-    return TableMapper.convertirTableDto(table);
+    TableResponseDto responseDto = TableMapper.convertirTableDto(table);
+    enrichWithAssignment(table, responseDto);
+    return responseDto;
     }
 
     @Override
@@ -84,15 +90,20 @@ public class TableServiceImplJpaMy8 implements TableService {
 
     tableRepository.save(table);
 
-    return TableMapper.convertirTableDto(table);
+    TableResponseDto responseDto = TableMapper.convertirTableDto(table);
+    enrichWithAssignment(table, responseDto);
+    return responseDto;
     }
 
     @Override
     public TableResponseDto findById(int idTable) {
 
-        return tableRepository.findById(idTable)
-            .map(TableMapper::convertirTableDto)
+        TableEntity table = tableRepository.findById(idTable)
             .orElseThrow(() -> new NotFoundException("Mesa no encontrada"));
+
+        TableResponseDto dto = TableMapper.convertirTableDto(table);
+        enrichWithAssignment(table, dto);
+        return dto;
     }
 
     @Override
@@ -100,7 +111,11 @@ public class TableServiceImplJpaMy8 implements TableService {
 
         return tableRepository.findAll()
             .stream()
-            .map(TableMapper::convertirTableDto)
+            .map(table -> {
+                TableResponseDto dto = TableMapper.convertirTableDto(table);
+                enrichWithAssignment(table, dto);
+                return dto;
+            })
             .toList();
     }
 
@@ -120,7 +135,11 @@ public class TableServiceImplJpaMy8 implements TableService {
 
     return tableRepository.findByRestaurant(restaurant)
         .stream()
-        .map(TableMapper::convertirTableDto)
+        .map(table -> {
+            TableResponseDto dto = TableMapper.convertirTableDto(table);
+            enrichWithAssignment(table, dto);
+            return dto;
+        })
         .toList();
     }
 
@@ -200,7 +219,11 @@ public class TableServiceImplJpaMy8 implements TableService {
     }
 
     return tables.stream()
-        .map(TableMapper::convertirTableDto)
+        .map(table -> {
+            TableResponseDto dto = TableMapper.convertirTableDto(table);
+            enrichWithAssignment(table, dto);
+            return dto;
+        })
         .toList();
 	}
 
@@ -228,12 +251,7 @@ public class TableServiceImplJpaMy8 implements TableService {
     return true;
 	}
 
-	
-
-
-
-
-	private void checkEmployeeBelongsToRestaurant(
+    private void checkEmployeeBelongsToRestaurant(
         Employee employee,
         Restaurant restaurant) {
 
@@ -244,9 +262,9 @@ public class TableServiceImplJpaMy8 implements TableService {
         throw new ForbiddenException(
             "No puedes operar sobre mesas de otro restaurante");
     }
-}
+    }
 
-public void updatePosition(Integer tableId, Integer posX, Integer posY) {
+    public void updatePosition(Integer tableId, Integer posX, Integer posY) {
 
     TableEntity table = tableRepository.findById(tableId)
         .orElseThrow(() -> new NotFoundException("Mesa no encontrada"));
@@ -255,6 +273,14 @@ public void updatePosition(Integer tableId, Integer posX, Integer posY) {
     table.setPosY(posY);
 
     tableRepository.save(table);
-}
+    }
+
+    private void enrichWithAssignment(TableEntity table, TableResponseDto dto) {
+    tableAssignmentRepository.findByTableAndEndTimeIsNull(table).ifPresent(assignment -> {
+        dto.setIdAssignment(assignment.getIdAssignment());
+        dto.setIdEmployee(assignment.getEmployee().getIdUser());
+        dto.setEmployeeName(assignment.getEmployee().getFirstName() + " " + assignment.getEmployee().getLastName());
+    });
+    }
 
 }

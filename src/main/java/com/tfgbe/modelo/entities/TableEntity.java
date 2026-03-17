@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,5 +49,7 @@ public class TableEntity {
 
 	@Column(name = "pos_y")
 	private Integer posY;
-	
+
+	@OneToMany(mappedBy = "table", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+	private java.util.List<TableAssignment> assignments;
 }
