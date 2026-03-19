@@ -16,6 +16,8 @@ import com.tfgbe.modelo.entities.Restaurant;
 import com.tfgbe.modelo.repository.EmployeeRepository;
 import com.tfgbe.modelo.repository.FloorRepository;
 import com.tfgbe.modelo.repository.RestaurantRepository;
+import com.tfgbe.modelo.repository.TableRepository;
+import com.tfgbe.modelo.repository.RestaurantElementRepository;
 
 @Service
 public class FloorServiceImpl implements FloorService {
@@ -28,6 +30,12 @@ public class FloorServiceImpl implements FloorService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private TableRepository tableRepository;
+
+    @Autowired
+    private RestaurantElementRepository restaurantElementRepository;
 
     @Override
     public List<FloorResponseDto> findByRestaurant(Long idRestaurant) {
@@ -84,6 +92,12 @@ public class FloorServiceImpl implements FloorService {
             .orElseThrow(() -> new NotFoundException("Planta no encontrada"));
             
         checkPermission(floor.getRestaurant());
+        
+        // Eliminar mesas asociadas
+        tableRepository.deleteAll(tableRepository.findByFloor(floor));
+        
+        // Eliminar elementos decorativos asociados
+        restaurantElementRepository.deleteAll(restaurantElementRepository.findByFloor(floor));
         
         floorRepository.delete(floor);
     }
