@@ -21,6 +21,7 @@ public interface TableService {
     List<TableResponseDto> findAll();
 
     List<TableResponseDto> findByRestaurant(Long idRestaurant);
+    List<TableResponseDto> findByFloor(Integer idFloor);
 
     TableResponseDto updateTable(int idTable, UpdateTableDto dto);
 

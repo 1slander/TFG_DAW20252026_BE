@@ -26,6 +26,7 @@ public class TableMapper {
             )
             .posX(table.getPosX())
             .posY(table.getPosY())
+            .idFloor(table.getFloor() != null ? table.getFloor().getIdFloor() : null)
             .build();
     }
 

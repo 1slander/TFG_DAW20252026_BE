@@ -13,9 +13,11 @@ import com.tfgbe.mapper.ElementMapper;
 import com.tfgbe.modelo.dto.CreateElementDto;
 import com.tfgbe.modelo.dto.ElementResponseDto;
 import com.tfgbe.modelo.entities.Employee;
+import com.tfgbe.modelo.entities.Floor;
 import com.tfgbe.modelo.entities.Restaurant;
 import com.tfgbe.modelo.entities.RestaurantElement;
 import com.tfgbe.modelo.repository.EmployeeRepository;
+import com.tfgbe.modelo.repository.FloorRepository;
 import com.tfgbe.modelo.repository.RestaurantElementRepository;
 import com.tfgbe.modelo.repository.RestaurantRepository;
 
@@ -30,6 +32,9 @@ public class RestaurantElementServiceImpl implements RestaurantElementService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private FloorRepository floorRepository;
 
     @Override
     public ElementResponseDto createElement(Long idRestaurant, CreateElementDto dto) {
@@ -52,6 +57,12 @@ public class RestaurantElementServiceImpl implements RestaurantElementService {
         element.setRotation(dto.getRotation() != null ? dto.getRotation() : 0);
         element.setRestaurant(restaurant);
 
+        if (dto.getIdFloor() != null) {
+            Floor floor = floorRepository.findById(dto.getIdFloor())
+                .orElseThrow(() -> new NotFoundException("Planta no encontrada"));
+            element.setFloor(floor);
+        }
+
         elementRepository.save(element);
 
         return ElementMapper.convertirElementDto(element);
@@ -70,6 +81,24 @@ public class RestaurantElementServiceImpl implements RestaurantElementService {
         }
 
         return elementRepository.findByRestaurant(restaurant)
+            .stream()
+            .map(ElementMapper::convertirElementDto)
+            .toList();
+    }
+
+    @Override
+    public List<ElementResponseDto> findByFloor(Integer idFloor) {
+        Floor floor = floorRepository.findById(idFloor)
+            .orElseThrow(() -> new NotFoundException("Planta no encontrada"));
+            
+        Employee authEmployee = getAuthenticatedEmployee();
+        boolean isAdmin = hasAuthority("ROLE_ADMIN");
+        if (!isAdmin && (authEmployee.getRestaurant() == null || 
+            !authEmployee.getRestaurant().getIdRestaurant().equals(floor.getRestaurant().getIdRestaurant()))) {
+            throw new ForbiddenException("No tienes acceso a esta planta");
+        }
+
+        return elementRepository.findByFloor(floor)
             .stream()
             .map(ElementMapper::convertirElementDto)
             .toList();

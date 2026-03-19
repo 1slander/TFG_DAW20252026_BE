@@ -21,4 +21,5 @@ public class CreateTableDto {
 
     private Integer posX;
     private Integer posY;
+    private Integer idFloor;
 }

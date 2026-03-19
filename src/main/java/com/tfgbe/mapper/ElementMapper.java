@@ -1,7 +1,6 @@
 package com.tfgbe.mapper;
 
 import org.springframework.stereotype.Component;
-
 import com.tfgbe.modelo.dto.ElementResponseDto;
 import com.tfgbe.modelo.entities.RestaurantElement;
 
@@ -20,6 +19,7 @@ public class ElementMapper {
                 .height(element.getHeight())
                 .rotation(element.getRotation())
                 .idRestaurant(element.getRestaurant().getIdRestaurant())
+                .idFloor(element.getFloor() != null ? element.getFloor().getIdFloor() : null)
                 .build();
     }
 }

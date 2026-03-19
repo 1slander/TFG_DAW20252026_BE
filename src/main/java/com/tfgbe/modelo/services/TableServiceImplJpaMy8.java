@@ -19,8 +19,10 @@ import com.tfgbe.modelo.entities.TableEntity;
 import com.tfgbe.modelo.entities.TableStatus;
 import com.tfgbe.modelo.repository.EmployeeRepository;
 import com.tfgbe.modelo.repository.RestaurantRepository;
+import com.tfgbe.modelo.repository.FloorRepository;
 import com.tfgbe.modelo.repository.TableAssignmentRepository;
 import com.tfgbe.modelo.repository.TableRepository;
+import com.tfgbe.modelo.entities.Floor;
 
 @Service
 public class TableServiceImplJpaMy8 implements TableService {
@@ -36,6 +38,9 @@ public class TableServiceImplJpaMy8 implements TableService {
 
     @Autowired
     private TableAssignmentRepository tableAssignmentRepository;
+
+    @Autowired
+    private FloorRepository floorRepository;
 
     @Override
     public TableResponseDto createTable(Long idRestaurant, CreateTableDto dto) {
@@ -56,6 +61,14 @@ public class TableServiceImplJpaMy8 implements TableService {
     table.setTableCapacity(dto.getTableCapacity());
     table.setRestaurant(restaurant);
     table.setStatus(TableStatus.NOT_BOOKED);
+    table.setPosX(dto.getPosX() != null ? dto.getPosX() : 0);
+    table.setPosY(dto.getPosY() != null ? dto.getPosY() : 0);
+
+    if (dto.getIdFloor() != null) {
+        Floor floor = floorRepository.findById(dto.getIdFloor())
+            .orElseThrow(() -> new NotFoundException("Planta no encontrada"));
+        table.setFloor(floor);
+    }
 
     tableRepository.save(table);
 
@@ -88,6 +101,12 @@ public class TableServiceImplJpaMy8 implements TableService {
     if (dto.getStatus() != null)
         table.setStatus(dto.getStatus());
 
+    if (dto.getIdFloor() != null) {
+        Floor floor = floorRepository.findById(dto.getIdFloor())
+            .orElseThrow(() -> new NotFoundException("Planta no encontrada"));
+        table.setFloor(floor);
+    }
+
     tableRepository.save(table);
 
     TableResponseDto responseDto = TableMapper.convertirTableDto(table);
@@ -97,9 +116,15 @@ public class TableServiceImplJpaMy8 implements TableService {
 
     @Override
     public TableResponseDto findById(int idTable) {
-
         TableEntity table = tableRepository.findById(idTable)
             .orElseThrow(() -> new NotFoundException("Mesa no encontrada"));
+
+        Employee authEmployee = getAuthenticatedEmployee();
+        boolean isAdmin = hasAuthority("ROLE_ADMIN");
+
+        if (!isAdmin) {
+            checkEmployeeBelongsToRestaurant(authEmployee, table.getRestaurant());
+        }
 
         TableResponseDto dto = TableMapper.convertirTableDto(table);
         enrichWithAssignment(table, dto);
@@ -108,8 +133,41 @@ public class TableServiceImplJpaMy8 implements TableService {
 
     @Override
     public List<TableResponseDto> findAll() {
+        Employee authEmployee = getAuthenticatedEmployee();
+        boolean isAdmin = hasAuthority("ROLE_ADMIN");
 
-        return tableRepository.findAll()
+        List<TableEntity> tables;
+        if (isAdmin) {
+            tables = tableRepository.findAll();
+        } else {
+            if (authEmployee.getRestaurant() == null) {
+                return List.of();
+            }
+            tables = tableRepository.findByRestaurant(authEmployee.getRestaurant());
+        }
+
+        return tables.stream()
+            .map(table -> {
+                TableResponseDto dto = TableMapper.convertirTableDto(table);
+                enrichWithAssignment(table, dto);
+                return dto;
+            })
+            .toList();
+    }
+
+    @Override
+    public List<TableResponseDto> findByFloor(Integer idFloor) {
+        Floor floor = floorRepository.findById(idFloor)
+            .orElseThrow(() -> new NotFoundException("Planta no encontrada"));
+            
+        Employee authEmployee = getAuthenticatedEmployee();
+        boolean isAdmin = hasAuthority("ROLE_ADMIN");
+        if (!isAdmin && (authEmployee.getRestaurant() == null || 
+            !authEmployee.getRestaurant().getIdRestaurant().equals(floor.getRestaurant().getIdRestaurant()))) {
+            throw new ForbiddenException("No tienes acceso a esta planta");
+        }
+
+        return tableRepository.findByFloor(floor)
             .stream()
             .map(table -> {
                 TableResponseDto dto = TableMapper.convertirTableDto(table);
@@ -264,15 +322,22 @@ public class TableServiceImplJpaMy8 implements TableService {
     }
     }
 
+    @Override
     public void updatePosition(Integer tableId, Integer posX, Integer posY) {
+        TableEntity table = tableRepository.findById(tableId)
+            .orElseThrow(() -> new NotFoundException("Mesa no encontrada"));
 
-    TableEntity table = tableRepository.findById(tableId)
-        .orElseThrow(() -> new NotFoundException("Mesa no encontrada"));
+        Employee authEmployee = getAuthenticatedEmployee();
+        boolean isAdmin = hasAuthority("ROLE_ADMIN");
 
-    table.setPosX(posX);
-    table.setPosY(posY);
+        if (!isAdmin) {
+            checkEmployeeBelongsToRestaurant(authEmployee, table.getRestaurant());
+        }
 
-    tableRepository.save(table);
+        table.setPosX(posX);
+        table.setPosY(posY);
+
+        tableRepository.save(table);
     }
 
     private void enrichWithAssignment(TableEntity table, TableResponseDto dto) {

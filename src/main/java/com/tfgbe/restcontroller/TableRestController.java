@@ -60,6 +60,11 @@ public class TableRestController {
         return ResponseEntity.ok(tableService.findById(idTable));
     }
 
+    @GetMapping("/floor/{idFloor}")
+    public ResponseEntity<List<TableResponseDto>> findByFloor(@PathVariable Integer idFloor) {
+        return ResponseEntity.ok(tableService.findByFloor(idFloor));
+    }
+
     @GetMapping("/restaurant/{idRestaurant}")
     public ResponseEntity<List<TableResponseDto>> findByRestaurant(
             @PathVariable Long idRestaurant) {

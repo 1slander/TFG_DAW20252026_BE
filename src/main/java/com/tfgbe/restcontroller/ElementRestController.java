@@ -37,6 +37,11 @@ public class ElementRestController {
             elementService.findByRestaurant(idRestaurant));
     }
 
+    @GetMapping("/floor/{idFloor}")
+    public ResponseEntity<List<ElementResponseDto>> findByFloor(@PathVariable Integer idFloor) {
+        return ResponseEntity.ok(elementService.findByFloor(idFloor));
+    }
+
     @DeleteMapping("/delete/{idElement}")
     public ResponseEntity<?> deleteElement(
             @PathVariable Long idElement) {
@@ -65,15 +70,6 @@ public class ElementRestController {
             @RequestParam(required = false, defaultValue = "0") Integer rotation) {
 
         elementService.updatePosition(idElement, posX, posY, rotation);
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/update/rotation/{idElement}")
-    public ResponseEntity<Void> updateRotation(
-            @PathVariable Long idElement,
-            @RequestParam Integer rotation) {
-
-        // elementService.updateRotation(idElement, rotation); --> Eliminado en refactor, se hace en updatePosition ahora
         return ResponseEntity.ok().build();
     }
 
