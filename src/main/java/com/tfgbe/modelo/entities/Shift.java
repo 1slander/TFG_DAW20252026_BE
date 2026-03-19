@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +21,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name="shifts")
+@Table(name="shifts", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"assign_shift", "id_restaurant"})
+})
 
 public class Shift {
 
@@ -30,7 +33,7 @@ public class Shift {
 	public int idShift;
 	
 	@Enumerated(EnumType.STRING)
-    @Column(name = "assign_shift", nullable = false, unique = true)
+    @Column(name = "assign_shift", nullable = false)
     private ShiftType assignShift;
 
 	@ManyToOne(optional = false)

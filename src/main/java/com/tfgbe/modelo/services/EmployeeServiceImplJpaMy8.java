@@ -376,30 +376,28 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService {
                 .orElseThrow(() -> new NotFoundException(
                         "No existe el Empleado con ID: " + employee));
 
-        Shift shiftToAssign = shiftRepository.findById(shift)
+        Shift shiftToAssign = null;
+        if (shift != 0) {
+            shiftToAssign = shiftRepository.findById(shift)
                 .orElseThrow(() -> new NotFoundException("No existe Shift con ID: " + shift));
-
-        Employee employeeLogged = getAuthenticatedEmployee();
-        boolean isAdmin = hasAuthority("ROLE_ADMIN");
-
-        if (employeeLogged.getIdUser() == employeeToAssign.getIdUser())
-            throw new ForbiddenException("No puedes cambiar tu propio shift");
-
-        if (employeeToAssign.getRestaurant() == null || shiftToAssign.getRestaurant() == null) {
-            throw new ForbiddenException("Empleado o turno sin restaraunte asignado");
         }
 
-        if (!employeeToAssign.getRestaurant().getIdRestaurant().equals(shiftToAssign.getRestaurant().getIdRestaurant()))
-            throw new BadRequestException("Empleado y shift no pertenecen al mismo restaurante.");
-
-        RolesEnum rolCreador = null;
+        boolean isAdmin = hasAuthority("ROLE_ADMIN");
+        Employee employeeLogged = null;
+        
         if (!isAdmin) {
-
+            employeeLogged = getAuthenticatedEmployee();
+            
+            // Si no es admin, comprobamos que pertenezca al mismo restaurante que el empleado a asignar
             if (employeeLogged.getRestaurant() == null) {
                 throw new ForbiddenException("No tienes restaurante asignado");
             }
+            
+            if (employeeToAssign.getRestaurant() == null || !employeeLogged.getRestaurant().getIdRestaurant().equals(employeeToAssign.getRestaurant().getIdRestaurant())) {
+                 throw new ForbiddenException("No puedes gestionar empleados de otros restaurantes");
+            }
 
-            rolCreador = SecurityContextHolder.getContext()
+            RolesEnum rolCreador = SecurityContextHolder.getContext()
                     .getAuthentication()
                     .getAuthorities()
                     .stream()
@@ -411,17 +409,21 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService {
             RolesEnum rolEmpleado = RoleUtils.roleNormalizer(
                     employeeToAssign.getRole().getRoleName());
 
-            if (rolEmpleado.getNivel() >= rolCreador.getNivel()) {
-                throw new ForbiddenException(
-                        "No puedes actualizar un empleado con el rol " + rolEmpleado +
-                                " tu nivel es menor o igual");
-            }
+            // Permitir auto-asignación si es OWNER
+            boolean isSelf = employeeLogged.getIdUser() == employeeToAssign.getIdUser();
 
+            if (!isSelf && rolEmpleado.getNivel() >= rolCreador.getNivel()) {
+                 if (rolCreador != RolesEnum.OWNER) {
+                    throw new ForbiddenException(
+                            "No puedes actualizar un empleado con el rol " + rolEmpleado +
+                                    " tu nivel es menor o igual");
+                 }
+            }
         }
 
         employeeToAssign.setShift(shiftToAssign);
         employeeRepository.save(employeeToAssign);
-        return EmployeeMapper.convertirEmployeeDto(employeeLogged);
+        return EmployeeMapper.convertirEmployeeDto(employeeToAssign);
 
     }
 

@@ -40,6 +40,8 @@ public class SecurityConfig {
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(authz -> authz
+                    // Permitir todos los preflights de CORS
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                     // Swagger
                     .requestMatchers("/swagger-ui/**").permitAll()
@@ -55,17 +57,19 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/employees")
                         .hasAuthority("ROLE_ADMIN")
 
-                    .requestMatchers(HttpMethod.GET, "/employees/*")
+                    .requestMatchers(HttpMethod.GET, "/employees/restaurant")
                         .hasAnyAuthority(
                             "ROLE_ADMIN",
                             "ROLE_OWNER",
                             "ROLE_MANAGER",
                             "ROLE_ASSISTANT_MANAGER",
-                            "ROLE_TEAM_LEADER"
+                            "ROLE_TEAM_LEADER",
+                            "ROLE_EMPLOYEE"
                         )
 
-                    .requestMatchers(HttpMethod.GET, "/employees/restaurant")
+                    .requestMatchers(HttpMethod.GET, "/employees/*")
                         .hasAnyAuthority(
+                            "ROLE_ADMIN",
                             "ROLE_OWNER",
                             "ROLE_MANAGER",
                             "ROLE_ASSISTANT_MANAGER",
@@ -82,7 +86,14 @@ public class SecurityConfig {
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
 
                     .requestMatchers(HttpMethod.GET, "/restaurant/my")
-                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
+                        .hasAnyAuthority(
+                            "ROLE_ADMIN",
+                            "ROLE_OWNER",
+                            "ROLE_MANAGER",
+                            "ROLE_ASSISTANT_MANAGER",
+                            "ROLE_TEAM_LEADER",
+                            "ROLE_EMPLOYEE"
+                        )
 
                     .requestMatchers(HttpMethod.GET, "/restaurant/owner/**")
                         .hasAuthority("ROLE_ADMIN")
@@ -97,42 +108,14 @@ public class SecurityConfig {
                         .hasAuthority("ROLE_ADMIN")
 
                     // Shifts
-                    .requestMatchers(HttpMethod.GET, "/shifts/**")
-                        .hasAnyAuthority(
-                            "ROLE_ADMIN",
-                            "ROLE_OWNER",
-                            "ROLE_MANAGER",
-                            "ROLE_ASSISTANT_MANAGER",
-                            "ROLE_TEAM_LEADER",
-                            "ROLE_EMPLOYEE"
-                        )
+                    .requestMatchers(HttpMethod.PUT, "/employees/*/shift/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER", "ROLE_ASSISTANT_MANAGER")
+                    
+                    .requestMatchers(HttpMethod.GET, "/shifts", "/shifts/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER", "ROLE_ASSISTANT_MANAGER", "ROLE_TEAM_LEADER", "ROLE_EMPLOYEE")
 
-                    .requestMatchers(HttpMethod.POST, "/shifts/**")
-                        .hasAnyAuthority(
-                            "ROLE_ADMIN",
-                            "ROLE_OWNER",
-                            "ROLE_MANAGER",
-                            "ROLE_ASSISTANT_MANAGER",
-                            "ROLE_TEAM_LEADER"
-                        )
-
-                    .requestMatchers(HttpMethod.PUT, "/shifts/**")
-                        .hasAnyAuthority(
-                            "ROLE_ADMIN",
-                            "ROLE_OWNER",
-                            "ROLE_MANAGER",
-                            "ROLE_ASSISTANT_MANAGER",
-                            "ROLE_TEAM_LEADER"
-                        )
-
-                    .requestMatchers(HttpMethod.DELETE, "/shifts/**")
-                        .hasAnyAuthority(
-                            "ROLE_ADMIN",
-                            "ROLE_OWNER",
-                            "ROLE_MANAGER",
-                            "ROLE_ASSISTANT_MANAGER",
-                            "ROLE_TEAM_LEADER"
-                        )
+                    // Todas las demás operaciones de /shifts (POST, PUT, DELETE) requieren roles de gestión
+                    .requestMatchers("/shifts/delete/**", "/shifts/update/**", "/shifts")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER", "ROLE_ASSISTANT_MANAGER")
 
                     .requestMatchers("/table-assignment/**").authenticated()
                     .requestMatchers("/tables/**").authenticated()

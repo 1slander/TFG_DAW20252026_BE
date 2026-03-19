@@ -79,3 +79,9 @@ ALTER TABLE "tables" ADD CONSTRAINT fk_tables_floors FOREIGN KEY (id_floor) REFE
 
 ALTER TABLE restaurant_elements ADD COLUMN IF NOT EXISTS id_floor int4;
 ALTER TABLE restaurant_elements ADD CONSTRAINT fk_elements_floors FOREIGN KEY (id_floor) REFERENCES floors(id_floor) ON DELETE SET NULL;
+
+
+/*SI da error turnos
+ALTER TABLE shifts DROP CONSTRAINT IF EXISTS uklws0m02gtraycujwdxuulvgyq;
+ALTER TABLE shifts ADD CONSTRAINT uq_shifts_assign_shift_restaurant UNIQUE (assign_shift, id_restaurant);
+*/

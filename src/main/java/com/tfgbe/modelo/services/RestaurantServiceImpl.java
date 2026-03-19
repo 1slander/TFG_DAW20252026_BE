@@ -150,16 +150,20 @@ public class RestaurantServiceImpl implements RestaurantService{
             .anyMatch(a -> a.getAuthority().equals(role));
     }
 	
-	@Override
-public RestaurantResponseDto findMyRestaurant() {
+    @Override
+    public RestaurantResponseDto findMyRestaurant() {
+        Employee employee = getAuthenticatedEmployee();
 
-    Employee employee = getAuthenticatedEmployee();
+        Restaurant restaurant = employee.getRestaurant();
+        
+        // Si no tiene restaurante directo, probamos por si es el dueño (para compatibilidad)
+        if (restaurant == null) {
+            restaurant = restaurantRepository.findByOwner(employee)
+                .orElseThrow(() -> new NotFoundException("Este usuario no tiene restaurante asignado"));
+        }
 
-    Restaurant restaurant = restaurantRepository.findByOwner(employee)
-        .orElseThrow(() -> new NotFoundException("Este usuario no tiene restaurante asignado"));
-
-    return RestaurantMapper.convertirRestaurantDto(restaurant);
-}
+        return RestaurantMapper.convertirRestaurantDto(restaurant);
+    }
 
 @Override
 public EmployeeResponseDto assignEmployeeToRestaurant(AssignEmployeeRestaurantDto dto) {
