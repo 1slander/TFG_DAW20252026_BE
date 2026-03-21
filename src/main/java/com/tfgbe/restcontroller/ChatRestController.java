@@ -52,9 +52,13 @@ public class ChatRestController {
                     "El asistente ha alcanzado el límite de consultas. Inténtalo más tarde."
                 ));
             }
-            return ResponseEntity.ok(new ChatResponseDto(
-                "Ha ocurrido un error al procesar tu consulta. Inténtalo de nuevo."
-            ));
+                e.printStackTrace();
+    return ResponseEntity.ok(new ChatResponseDto(
+        "Error: " + e.getMessage()
+    ));
+            // return ResponseEntity.ok(new ChatResponseDto(
+            //     "Ha ocurrido un error al procesar tu consulta. Inténtalo de nuevo."
+            // ));
         }
     }
 
