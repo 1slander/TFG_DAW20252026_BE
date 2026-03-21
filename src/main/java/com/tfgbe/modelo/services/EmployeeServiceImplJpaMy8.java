@@ -31,6 +31,7 @@ import com.tfgbe.modelo.repository.ShiftRepository;
 import com.tfgbe.security.JwtUtil;
 import com.tfgbe.util.RoleUtils;
 import com.tfgbe.util.RolesEnum;
+import com.tfgbe.modelo.dto.ChangePasswordDto;
 
 @Service
 public class EmployeeServiceImplJpaMy8 implements EmployeeService {
@@ -368,6 +369,25 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService {
         return main.getRestaurant().getIdRestaurant().equals(employee.getRestaurant().getIdRestaurant());
 
     }
+
+
+    @Override
+public EmployeeResponseDto getMyProfile() {
+    return EmployeeMapper.convertirEmployeeDto(getAuthenticatedEmployee());
+}
+
+@Override
+public void changeMyPassword(ChangePasswordDto changePasswordDto) {
+    Employee employee = getAuthenticatedEmployee();
+
+    if (!passwordEncoder.matches(changePasswordDto.getCurrentPassword(), employee.getPassword())) {
+        throw new UnauthorizedException("La contraseña actual es incorrecta");
+    }
+
+    employee.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
+    employee.setUpdatedAt(LocalDate.now());
+    employeeRepository.save(employee);
+}
 
     @Override
     public EmployeeResponseDto assignShiftToEmployee(int employee, int shift) {

@@ -25,11 +25,11 @@ import jakarta.servlet.http.HttpServletResponse;
 @Configuration
 public class SecurityConfig {
 
-    @Autowired
-    JwtAuthenticationFilter jwtAuthenticationFilter;
+        @Autowired
+        JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
                 // 👇 ACTIVAMOS CORS AQUÍ
@@ -43,19 +43,19 @@ public class SecurityConfig {
                     // Permitir todos los preflights de CORS
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                    // Swagger
-                    .requestMatchers("/swagger-ui/**").permitAll()
+                                                // Swagger
+                                                .requestMatchers("/swagger-ui/**").permitAll()
 
-                    // Auth
-                    .requestMatchers("/login","/signup").permitAll()
-                    .requestMatchers("/admin/login").permitAll()
+                                                // Auth
+                                                .requestMatchers("/login", "/signup").permitAll()
+                                                .requestMatchers("/admin/login").permitAll()
 
-                    // Admin
-                    .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                                                // Admin
+                                                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
 
-                    // Employees
-                    .requestMatchers(HttpMethod.GET, "/employees")
-                        .hasAuthority("ROLE_ADMIN")
+                                                // Employees
+                                                .requestMatchers(HttpMethod.GET, "/employees")
+                                                .hasAuthority("ROLE_ADMIN")
 
                     .requestMatchers(HttpMethod.GET, "/employees/restaurant")
                         .hasAnyAuthority(
@@ -76,14 +76,14 @@ public class SecurityConfig {
                             "ROLE_TEAM_LEADER"
                         )
 
-                    .requestMatchers("/employees/create",
-                                     "/employees/delete/**",
-                                     "/employees/update/**")
-                        .hasAnyAuthority("ROLE_ADMIN","ROLE_OWNER","ROLE_MANAGER")
+                                                .requestMatchers("/employees/create",
+                                                                "/employees/delete/**",
+                                                                "/employees/update/**")
+                                                .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER")
 
-                    // Restaurant
-                    .requestMatchers(HttpMethod.POST, "/restaurant")
-                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
+                                                // Restaurant
+                                                .requestMatchers(HttpMethod.POST, "/restaurant")
+                                                .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
 
                     .requestMatchers(HttpMethod.GET, "/restaurant/my")
                         .hasAnyAuthority(
@@ -95,17 +95,17 @@ public class SecurityConfig {
                             "ROLE_EMPLOYEE"
                         )
 
-                    .requestMatchers(HttpMethod.GET, "/restaurant/owner/**")
-                        .hasAuthority("ROLE_ADMIN")
+                                                .requestMatchers(HttpMethod.GET, "/restaurant/owner/**")
+                                                .hasAuthority("ROLE_ADMIN")
 
-                    .requestMatchers(HttpMethod.GET, "/restaurant/**")
-                        .hasAuthority("ROLE_ADMIN")
+                                                .requestMatchers(HttpMethod.GET, "/restaurant/**")
+                                                .hasAuthority("ROLE_ADMIN")
 
-                    .requestMatchers(HttpMethod.PUT, "/restaurant/**")
-                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
+                                                .requestMatchers(HttpMethod.PUT, "/restaurant/**")
+                                                .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
 
-                    .requestMatchers(HttpMethod.DELETE, "/restaurant/**")
-                        .hasAuthority("ROLE_ADMIN")
+                                                .requestMatchers(HttpMethod.DELETE, "/restaurant/**")
+                                                .hasAuthority("ROLE_ADMIN")
 
                     // Shifts
                     .requestMatchers(HttpMethod.PUT, "/employees/*/shift/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER", "ROLE_ASSISTANT_MANAGER")
@@ -117,60 +117,67 @@ public class SecurityConfig {
                     .requestMatchers("/shifts/delete/**", "/shifts/update/**", "/shifts")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER", "ROLE_ASSISTANT_MANAGER")
 
-                    .requestMatchers("/table-assignment/**").authenticated()
-                    .requestMatchers("/tables/**").authenticated()
+                                                .requestMatchers("/table-assignment/**").authenticated()
+                                                .requestMatchers("/tables/**").authenticated()
 
-                    .anyRequest().authenticated()
-                )
+                                                .requestMatchers(HttpMethod.GET, "/employees/me")
+                                                .authenticated()
 
-                .exceptionHandling(ex -> ex
-                    .authenticationEntryPoint((req,res,authException) ->
-                        res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "No autenticado")
-                    )
-                    .accessDeniedHandler((req,res,accessDeniedException) ->
-                        res.sendError(HttpServletResponse.SC_FORBIDDEN,"No tienes permisos")
-                    )
-                )
+                                                .requestMatchers(HttpMethod.PUT, "/employees/me/password")
+                                                .authenticated()
 
-                .addFilterBefore(jwtAuthenticationFilter, 
-                        UsernamePasswordAuthenticationFilter.class)
+                                                .requestMatchers("/chat").hasAnyAuthority(
+                                                                "ROLE_EMPLOYEE",
+                                                                "ROLE_TEAM_LEADER",
+                                                                "ROLE_ASSISTANT_MANAGER",
+                                                                "ROLE_MANAGER",
+                                                                "ROLE_OWNER")
 
-                .httpBasic(Customizer.withDefaults());
+                                                .anyRequest().authenticated())
 
-        return http.build();
-    }
+                                .exceptionHandling(ex -> ex
+                                                .authenticationEntryPoint((req, res, authException) -> res
+                                                                .sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                                                                                "No autenticado"))
+                                                .accessDeniedHandler((req, res, accessDeniedException) -> res
+                                                                .sendError(HttpServletResponse.SC_FORBIDDEN,
+                                                                                "No tienes permisos")))
 
+                                .addFilterBefore(jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class)
 
-    // 👇 CONFIGURACIÓN CORS
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+                                .httpBasic(Customizer.withDefaults());
 
-        CorsConfiguration configuration = new CorsConfiguration();
+                return http.build();
+        }
 
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:4200",      // Angular local
-                "https://tu-dominio.com"      // Producción
-        ));
+        // 👇 CONFIGURACIÓN CORS
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
 
-        configuration.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS"
-        ));
+                CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedHeaders(List.of("*"));
+                configuration.setAllowedOrigins(List.of(
+                                "http://localhost:4200", // Angular local
+                                "https://tu-dominio.com" // Producción
+                ));
 
-        configuration.setAllowCredentials(true);
+                configuration.setAllowedMethods(List.of(
+                                "GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+                configuration.setAllowedHeaders(List.of("*"));
 
-        source.registerCorsConfiguration("/**", configuration);
+                configuration.setAllowCredentials(true);
 
-        return source;
-    }
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
+                source.registerCorsConfiguration("/**", configuration);
 
-    @Bean
-    public PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
-    }
+                return source;
+        }
+
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 }

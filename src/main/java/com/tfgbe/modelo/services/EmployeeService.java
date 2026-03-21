@@ -3,6 +3,7 @@ package com.tfgbe.modelo.services;
 import java.util.List;
 import java.util.Optional;
 
+import com.tfgbe.modelo.dto.ChangePasswordDto;
 import com.tfgbe.modelo.dto.CreateEmployeeDto;
 import com.tfgbe.modelo.dto.EmployeeResponseDto;
 import com.tfgbe.modelo.dto.LoginResponseDto;
@@ -25,5 +26,6 @@ public interface EmployeeService {
     List<EmployeeResponseDto> findMyRestaurantEmployees();
    EmployeeResponseDto assignShiftToEmployee(int employeeId, int shiftId);
     
-
+    EmployeeResponseDto getMyProfile();
+    void changeMyPassword(ChangePasswordDto changePasswordDto);
 }
