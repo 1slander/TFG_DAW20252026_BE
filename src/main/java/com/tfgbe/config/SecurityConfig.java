@@ -120,6 +120,12 @@ public class SecurityConfig {
                     .requestMatchers("/table-assignment/**").authenticated()
                     .requestMatchers("/tables/**").authenticated()
 
+                    .requestMatchers(HttpMethod.GET, "/employees/me")
+    .authenticated()
+
+.requestMatchers(HttpMethod.PUT, "/employees/me/password")
+    .authenticated()
+    
                     .anyRequest().authenticated()
                 )
 
