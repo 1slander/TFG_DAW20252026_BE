@@ -5,8 +5,7 @@ import com.tfgbe.modelo.entities.Employee;
 
 public class EmployeeMapper {
 
-
-    public static EmployeeResponseDto convertirEmployeeDto(Employee employee){
+    public static EmployeeResponseDto convertirEmployeeDto(Employee employee) {
         return EmployeeResponseDto.builder()
                 .idEmployee(employee.getIdUser())
                 .email(employee.getEmail())
@@ -16,12 +15,17 @@ public class EmployeeMapper {
                 .role(employee.getRole().getRoleName())
                 .hourlyWage(employee.getHourlyWage())
                 .restaurant(
-                employee.getRestaurant() != null
-                    ? employee.getRestaurant().getRestaurantName()
-                    : null
-            )
-                .shift(employee.getShift()!=null ? employee.getShift().getAssignShift().name():"SIN ASIGNAR")
+                    employee.getRestaurant() != null
+                        ? employee.getRestaurant().getRestaurantName()
+                        : null
+                )
+                .shift(employee.getShift() != null
+                    ? employee.getShift().getAssignShift().name()
+                    : "SIN ASIGNAR"
+                )
+                .hireDate(employee.getHireDate())
+                .createdAt(employee.getCreatedAt())
+                .isActive(employee.isActive())
                 .build();
     }
-
 }

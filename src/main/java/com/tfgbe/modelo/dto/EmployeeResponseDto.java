@@ -1,5 +1,7 @@
 package com.tfgbe.modelo.dto;
 
+import java.time.LocalDate;
+
 import com.tfgbe.modelo.entities.Employee;
 
 import lombok.AllArgsConstructor;
@@ -16,12 +18,13 @@ public class EmployeeResponseDto {
     private String firstName;
     private String lastName;
     private String dni;
-    // Si necesitamos el role para logica, lo idea seria cambiar a Role role
     private String role;
     private double hourlyWage;
     private String restaurant;
     private String shift;
-
+    private LocalDate hireDate;
+    private LocalDate createdAt;
+    private boolean isActive;
     // Todo: Add Restaurant y Shift
 
 
