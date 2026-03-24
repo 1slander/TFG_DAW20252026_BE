@@ -22,6 +22,8 @@ import com.tfgbe.modelo.repository.RestaurantRepository;
 import com.tfgbe.modelo.repository.FloorRepository;
 import com.tfgbe.modelo.repository.TableAssignmentRepository;
 import com.tfgbe.modelo.repository.TableRepository;
+import com.tfgbe.util.RoleUtils;
+import com.tfgbe.util.RolesEnum;
 import com.tfgbe.modelo.entities.Floor;
 
 @Service
@@ -51,9 +53,14 @@ public class TableServiceImplJpaMy8 implements TableService {
     Restaurant restaurant = restaurantRepository.findById(idRestaurant)
         .orElseThrow(() -> new NotFoundException("Restaurante no encontrado"));
 
-    // Si no es admin, debe pertenecer al restaurante
+    // Si no es admin, debe pertenecer al restaurante y tener nivel >= 1
     if (!isAdmin) {
         checkEmployeeBelongsToRestaurant(authEmployee, restaurant);
+        
+        RolesEnum rol = RoleUtils.roleNormalizer(authEmployee.getRole().getRoleName());
+        if (rol.getNivel() < 0) {
+            throw new ForbiddenException("No tienes rango suficiente para crear mesas");
+        }
     }
 
     TableEntity table = new TableEntity();
@@ -219,6 +226,11 @@ public class TableServiceImplJpaMy8 implements TableService {
             authEmployee,
             table.getRestaurant()
         );
+
+        RolesEnum rol = RoleUtils.roleNormalizer(authEmployee.getRole().getRoleName());
+        if (rol.getNivel() < 0) {
+            throw new ForbiddenException("No tienes rango suficiente para eliminar mesas");
+        }
     }
 
     try {
@@ -332,6 +344,11 @@ public class TableServiceImplJpaMy8 implements TableService {
 
         if (!isAdmin) {
             checkEmployeeBelongsToRestaurant(authEmployee, table.getRestaurant());
+
+            RolesEnum rol = RoleUtils.roleNormalizer(authEmployee.getRole().getRoleName());
+            if (rol.getNivel() < 0) {
+                throw new ForbiddenException("No tienes rango suficiente para mover mesas");
+            }
         }
 
         table.setPosX(posX);

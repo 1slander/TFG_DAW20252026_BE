@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.tfgbe.exceptions.AlreadyExistsException;
 import com.tfgbe.exceptions.BadRequestException;
@@ -28,6 +29,7 @@ import com.tfgbe.modelo.entities.Shift;
 import com.tfgbe.modelo.repository.EmployeeRepository;
 import com.tfgbe.modelo.repository.RoleRepository;
 import com.tfgbe.modelo.repository.ShiftRepository;
+import com.tfgbe.modelo.repository.TableAssignmentRepository;
 import com.tfgbe.security.JwtUtil;
 import com.tfgbe.util.RoleUtils;
 import com.tfgbe.util.RolesEnum;
@@ -40,6 +42,8 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService {
     EmployeeRepository employeeRepository;
     @Autowired
     ShiftRepository shiftRepository;
+    @Autowired
+    TableAssignmentRepository tableAssignmentRepository;
 
     @Autowired
     RoleRepository roleRepo;
@@ -78,46 +82,57 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService {
             }
         }
 
-        return EmployeeMapper.convertirEmployeeDto(employee);
+        RolesEnum rolSolicitado = RoleUtils.roleNormalizer(employee.getRole().getRoleName());
+        RolesEnum rolCreador = RoleUtils.roleNormalizer(authEmployee.getRole().getRoleName());
+
+        EmployeeResponseDto dto = EmployeeMapper.convertirEmployeeDto(employee);
+
+        // Enmascarar salario si no es para sí mismo y el nivel no es superior
+        boolean isSelf = authEmployee.getIdUser() == employee.getIdUser();
+        if (!isAdmin && !isSelf && rolCreador.getNivel() <= rolSolicitado.getNivel()) {
+            dto.setHourlyWage(0.0);
+        }
+
+        return dto;
     }
 
-    @Override
+        @Override
+    @Transactional
     public int deleteOneEmployee(int idEmployee) {
         Employee employee = employeeRepository.findById(idEmployee).orElse(null);
         if (employee == null) {
             return 0;
-
         }
-        boolean isAdmin = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getAuthorities()
-                .stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+        Employee authEmployee = getAuthenticatedEmployee();
+        boolean isAdmin = hasAuthority("ROLE_ADMIN");
+
+        if (authEmployee.getIdUser() == employee.getIdUser()) {
+            throw new ForbiddenException("No puedes eliminarte a ti mismo");
+        }
 
         RolesEnum rolSolicitado = RoleUtils.roleNormalizer(employee.getRole().getRoleName());
-        RolesEnum rolCreador = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getAuthorities()
-                .stream()
-                .map(auth -> auth.getAuthority())
-                .findFirst()
-                .map(RoleUtils::roleNormalizer)
-                .orElseThrow(() -> new NoRoleException("Usuario sin rol"));
+        RolesEnum rolCreador = RoleUtils.roleNormalizer(authEmployee.getRole().getRoleName());
+
+        // Solo personal de gestión (Assistant Manager nivel 2+) o Owner pueden borrar
+        if (!isAdmin && rolCreador.getNivel() < RolesEnum.ASSISTANT_MANAGER.getNivel() && rolCreador != RolesEnum.OWNER) {
+            throw new ForbiddenException("No tienes rango suficiente para eliminar empleados");
+        }
 
         if (isAdmin || (rolSolicitado.getNivel() < rolCreador.getNivel() && workSameRestaurant(employee))) {
-
             try {
+                // Limpiar asignaciones antes de borrar el empleado para evitar errores de FK
+                tableAssignmentRepository.deleteByEmployee(employee);
+
                 employeeRepository.deleteById(idEmployee);
                 return 1;
             } catch (Exception e) {
                 throw new DeleteRestrictionException("No se puede eliminar el empleado con ID: " + idEmployee);
             }
         } else {
-
             throw new ForbiddenException(
-                    "No puedes borrar a ese usuario, ya que su nivel es igual o superior al tuyo.");
+                    "No puedes borrar a este usuario (nivel igual o superior al tuyo).");
         }
-
     }
 
     //////////////////////
@@ -229,15 +244,20 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService {
         Employee authEmployee = employeeRepository.findByDni(dniAuth)
                 .orElseThrow(() -> new NotFoundException("Empleado autenticado no existe"));
 
-        boolean isSelfUpdate = authEmployee.getDni().equals(employeeUpdate.getDni());
+        boolean isSelfUpdate = authEmployee.getDni().trim().equalsIgnoreCase(employeeUpdate.getDni().trim());
 
         RolesEnum rolEmpleado = RoleUtils.roleNormalizer(
                 employeeUpdate.getRole().getRoleName());
 
-        if (!isAdmin && rolEmpleado.getNivel() >= rolCreador.getNivel()) {
-            throw new ForbiddenException(
-                    "No puedes actualizar un empleado con el rol " + rolEmpleado +
-                            " tu nivel es menor o igual");
+        if (!isAdmin && !isSelfUpdate) {
+            if (rolCreador.getNivel() < RolesEnum.ASSISTANT_MANAGER.getNivel()) {
+                throw new ForbiddenException("No tienes permisos para actualizar a otros empleados.");
+            }
+            if (rolEmpleado.getNivel() >= rolCreador.getNivel()) {
+                throw new ForbiddenException(
+                        "No puedes actualizar un empleado con el rol " + rolEmpleado +
+                                " tu nivel es menor o igual");
+            }
         }
 
         if (updateEmployeeDto.getFirstName() != null) {
@@ -257,13 +277,12 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService {
         }
 
         if (updateEmployeeDto.getHourlyWage() != null) {
-
-            if (isAdmin ||
-                    rolCreador == RolesEnum.OWNER ||
-                    rolCreador == RolesEnum.MANAGER) {
-
+            
+            RolesEnum rolEmpleadoActual = RoleUtils.roleNormalizer(employeeUpdate.getRole().getRoleName());
+            
+            // Solo se puede editar el salario de otros (no el propio) y si eres de rango SUPERIOR
+            if (isAdmin || (!isSelfUpdate && rolCreador.getNivel() > rolEmpleadoActual.getNivel())) {
                 employeeUpdate.setHourlyWage(updateEmployeeDto.getHourlyWage());
-
             } else {
                 throw new ForbiddenException("No puedes modificar el salario");
             }
@@ -271,31 +290,38 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService {
 
         if (updateEmployeeDto.getRole() != null) {
 
-            if (isSelfUpdate && !isAdmin) {
-                throw new ForbiddenException("No puedes cambiar tu propio rol");
+            String nuevoRolNombre = updateEmployeeDto.getRole();
+            if (!nuevoRolNombre.startsWith("ROLE_")) {
+                nuevoRolNombre = "ROLE_" + nuevoRolNombre;
             }
 
-            if (!isAdmin && rolCreador != RolesEnum.OWNER) {
-                throw new ForbiddenException("Solo ADMIN u OWNER pueden cambiar el rol");
+            if (!nuevoRolNombre.equals(employeeUpdate.getRole().getRoleName())) {
+                if (isSelfUpdate && !isAdmin) {
+                    throw new ForbiddenException("No puedes cambiar tu propio rol");
+                }
+
+                if (!isAdmin && rolCreador.getNivel() < RolesEnum.ASSISTANT_MANAGER.getNivel() && rolCreador != RolesEnum.OWNER) {
+                    throw new ForbiddenException("Solo el personal de gestión puede cambiar el rol");
+                }
+
+                RolesEnum nuevoRol = RoleUtils.roleNormalizer(updateEmployeeDto.getRole());
+
+                if (!isAdmin && nuevoRol.getNivel() >= rolCreador.getNivel()) {
+                    throw new ForbiddenException(
+                            "No puedes asignar el rol " + nuevoRol +
+                                    " porque es igual o superior al tuyo");
+                }
+
+                String roleBd = "ROLE_" + nuevoRol.name();
+
+                Role roleEntity = roleRepo.findByRoleName(roleBd);
+
+                if (roleEntity == null) {
+                    throw new NotFoundException("No existe el role: " + nuevoRol);
+                }
+
+                employeeUpdate.setRole(roleEntity);
             }
-
-            RolesEnum nuevoRol = RoleUtils.roleNormalizer(updateEmployeeDto.getRole());
-
-            if (!isAdmin && nuevoRol.getNivel() >= rolCreador.getNivel()) {
-                throw new ForbiddenException(
-                        "No puedes asignar el rol " + nuevoRol +
-                                " porque es igual o superior al tuyo");
-            }
-
-            String roleBd = "ROLE_" + nuevoRol.name();
-
-            Role roleEntity = roleRepo.findByRoleName(roleBd);
-
-            if (roleEntity == null) {
-                throw new NotFoundException("No existe el role: " + nuevoRol);
-            }
-
-            employeeUpdate.setRole(roleEntity);
         }
 
         employeeUpdate.setUpdatedAt(LocalDate.now());
@@ -308,6 +334,8 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService {
     public List<EmployeeResponseDto> findMyRestaurantEmployees() {
 
         Employee authEmployee = getAuthenticatedEmployee();
+        RolesEnum rolCreador = RoleUtils.roleNormalizer(authEmployee.getRole().getRoleName());
+        boolean isAdmin = hasAuthority("ROLE_ADMIN");
 
         if (authEmployee.getRestaurant() == null) {
             throw new ForbiddenException(
@@ -317,7 +345,17 @@ public class EmployeeServiceImplJpaMy8 implements EmployeeService {
         return employeeRepository
                 .findByRestaurant(authEmployee.getRestaurant())
                 .stream()
-                .map(EmployeeMapper::convertirEmployeeDto)
+                .map(emp -> {
+                    EmployeeResponseDto dto = EmployeeMapper.convertirEmployeeDto(emp);
+                    RolesEnum rolEmp = RoleUtils.roleNormalizer(emp.getRole().getRoleName());
+                    
+                    // Enmascarar salario si no es para sí mismo y el nivel no es superior
+                    boolean isSelf = authEmployee.getIdUser() == emp.getIdUser();
+                    if (!isAdmin && !isSelf && rolCreador.getNivel() <= rolEmp.getNivel()) {
+                        dto.setHourlyWage(0.0);
+                    }
+                    return dto;
+                })
                 .toList();
     }
 

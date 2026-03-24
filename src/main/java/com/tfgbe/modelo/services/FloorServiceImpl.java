@@ -18,6 +18,8 @@ import com.tfgbe.modelo.repository.FloorRepository;
 import com.tfgbe.modelo.repository.RestaurantRepository;
 import com.tfgbe.modelo.repository.TableRepository;
 import com.tfgbe.modelo.repository.RestaurantElementRepository;
+import com.tfgbe.util.RoleUtils;
+import com.tfgbe.util.RolesEnum;
 
 @Service
 public class FloorServiceImpl implements FloorService {
@@ -67,6 +69,11 @@ public class FloorServiceImpl implements FloorService {
             
         checkPermission(restaurant);
         
+        RolesEnum rol = RoleUtils.roleNormalizer(getAuthenticatedEmployee().getRole().getRoleName());
+        if (rol.getNivel() < 4) {
+            throw new ForbiddenException("Solo el OWNER puede crear plantas");
+        }
+        
         Floor floor = Floor.builder()
             .name(name)
             .restaurant(restaurant)
@@ -82,6 +89,11 @@ public class FloorServiceImpl implements FloorService {
             
         checkPermission(floor.getRestaurant());
         
+        RolesEnum rol = RoleUtils.roleNormalizer(getAuthenticatedEmployee().getRole().getRoleName());
+        if (rol.getNivel() < 4) {
+            throw new ForbiddenException("Solo el OWNER puede modificar plantas");
+        }
+        
         floor.setName(name);
         return FloorMapper.toDto(floorRepository.save(floor));
     }
@@ -92,6 +104,11 @@ public class FloorServiceImpl implements FloorService {
             .orElseThrow(() -> new NotFoundException("Planta no encontrada"));
             
         checkPermission(floor.getRestaurant());
+        
+        RolesEnum rol = RoleUtils.roleNormalizer(getAuthenticatedEmployee().getRole().getRoleName());
+        if (rol.getNivel() < 4) {
+            throw new ForbiddenException("Solo el OWNER puede eliminar plantas");
+        }
         
         // Eliminar mesas asociadas
         tableRepository.deleteAll(tableRepository.findByFloor(floor));
@@ -110,6 +127,12 @@ public class FloorServiceImpl implements FloorService {
         checkPermission(floor.getRestaurant());
         
         return FloorMapper.toDto(floor);
+    }
+
+    private Employee getAuthenticatedEmployee() {
+        String dni = SecurityContextHolder.getContext().getAuthentication().getName();
+        return employeeRepository.findByDni(dni)
+            .orElseThrow(() -> new UnauthorizedException("Usuario no autenticado"));
     }
 
     private void checkPermission(Restaurant restaurant) {

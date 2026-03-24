@@ -88,13 +88,7 @@ assignment.setEmployee(targetEmployee);
 assignment.setStartTime(dto.getStartTime());
 assignment.setEndTime(null);
 
-tableAssignmentRepository.save(assignment);
-
-        // Cambiar estado de la mesa
-        tableService.updateTableStatus(
-            table.getIdTable(),
-            TableStatus.BOOKED
-        );
+        tableAssignmentRepository.save(assignment);
 
         return TableAssignmentMapper
             .convertirTableAssignmentDto(assignment);
@@ -132,11 +126,6 @@ tableAssignmentRepository.save(assignment);
 
         assignment.setEndTime(LocalDateTime.now());
         tableAssignmentRepository.save(assignment);
-
-        tableService.updateTableStatus(
-            assignment.getTable().getIdTable(),
-            TableStatus.NOT_BOOKED
-        );
 
         return TableAssignmentMapper
             .convertirTableAssignmentDto(assignment);

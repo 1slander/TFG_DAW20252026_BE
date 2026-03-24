@@ -20,6 +20,8 @@ import com.tfgbe.modelo.repository.EmployeeRepository;
 import com.tfgbe.modelo.repository.FloorRepository;
 import com.tfgbe.modelo.repository.RestaurantElementRepository;
 import com.tfgbe.modelo.repository.RestaurantRepository;
+import com.tfgbe.util.RoleUtils;
+import com.tfgbe.util.RolesEnum;
 
 @Service
 public class RestaurantElementServiceImpl implements RestaurantElementService {
@@ -46,6 +48,11 @@ public class RestaurantElementServiceImpl implements RestaurantElementService {
 
         if (!isAdmin) {
             checkEmployeeBelongsToRestaurant(authEmployee, restaurant);
+
+            RolesEnum rol = RoleUtils.roleNormalizer(authEmployee.getRole().getRoleName());
+            if (rol.getNivel() < 4) {
+                throw new ForbiddenException("Solo el OWNER puede crear elementos decorativos");
+            }
         }
 
         RestaurantElement element = new RestaurantElement();
@@ -115,6 +122,11 @@ public class RestaurantElementServiceImpl implements RestaurantElementService {
 
         if (!isAdmin) {
             checkEmployeeBelongsToRestaurant(authEmployee, element.getRestaurant());
+
+            RolesEnum rol = RoleUtils.roleNormalizer(authEmployee.getRole().getRoleName());
+            if (rol.getNivel() < 4) {
+                throw new ForbiddenException("Solo el OWNER puede eliminar elementos decorativos");
+            }
         }
 
         try {
@@ -135,6 +147,11 @@ public class RestaurantElementServiceImpl implements RestaurantElementService {
 
         if (!isAdmin) {
             checkEmployeeBelongsToRestaurant(authEmployee, element.getRestaurant());
+
+            RolesEnum rol = RoleUtils.roleNormalizer(authEmployee.getRole().getRoleName());
+            if (rol.getNivel() < 4) {
+                throw new ForbiddenException("Solo el OWNER puede mover elementos decorativos");
+            }
         }
 
         element.setPosX(posX);
@@ -157,6 +174,11 @@ public class RestaurantElementServiceImpl implements RestaurantElementService {
 
         if (!isAdmin) {
             checkEmployeeBelongsToRestaurant(authEmployee, element.getRestaurant());
+
+            RolesEnum rol = RoleUtils.roleNormalizer(authEmployee.getRole().getRoleName());
+            if (rol.getNivel() < 4) {
+                throw new ForbiddenException("Solo el OWNER puede redimensionar elementos");
+            }
         }
 
         element.setWidth(width);

@@ -67,6 +67,12 @@ public class SecurityConfig {
                             "ROLE_EMPLOYEE"
                         )
 
+                                                .requestMatchers(HttpMethod.GET, "/employees/me")
+                                                .authenticated()
+
+                                                .requestMatchers(HttpMethod.PUT, "/employees/me/password")
+                                                .authenticated()
+
                     .requestMatchers(HttpMethod.GET, "/employees/*")
                         .hasAnyAuthority(
                             "ROLE_ADMIN",
@@ -79,7 +85,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/employees/create",
                                                                 "/employees/delete/**",
                                                                 "/employees/update/**")
-                                                .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER")
+                                                .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER", "ROLE_ASSISTANT_MANAGER")
 
                                                 // Restaurant
                                                 .requestMatchers(HttpMethod.POST, "/restaurant")
@@ -120,11 +126,6 @@ public class SecurityConfig {
                                                 .requestMatchers("/table-assignment/**").authenticated()
                                                 .requestMatchers("/tables/**").authenticated()
 
-                                                .requestMatchers(HttpMethod.GET, "/employees/me")
-                                                .authenticated()
-
-                                                .requestMatchers(HttpMethod.PUT, "/employees/me/password")
-                                                .authenticated()
 
                                                 .requestMatchers("/chat").hasAnyAuthority(
                                                                 "ROLE_EMPLOYEE",

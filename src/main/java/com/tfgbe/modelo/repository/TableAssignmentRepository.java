@@ -15,5 +15,6 @@ public interface TableAssignmentRepository extends JpaRepository<TableAssignment
     );
 
      List<TableAssignment> findByTable(TableEntity table);
-	
+
+     void deleteByEmployee(com.tfgbe.modelo.entities.Employee employee);
 }
