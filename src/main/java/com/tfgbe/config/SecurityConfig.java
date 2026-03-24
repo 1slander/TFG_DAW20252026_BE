@@ -25,160 +25,157 @@ import jakarta.servlet.http.HttpServletResponse;
 @Configuration
 public class SecurityConfig {
 
-        @Autowired
-        JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Autowired
+    JwtAuthenticationFilter jwtAuthenticationFilter;
 
-        @Bean
-        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
                 // 👇 ACTIVAMOS CORS AQUÍ
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                
-                .csrf(AbstractHttpConfigurer::disable) 
-                .sessionManagement(session -> 
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
-                    // Permitir todos los preflights de CORS
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Permitir todos los preflights de CORS
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                                                // Swagger
-                                                .requestMatchers("/swagger-ui/**").permitAll()
+                        // Swagger
+                        .requestMatchers("/swagger-ui/**").permitAll()
 
-                                                // Auth
-                                                .requestMatchers("/login", "/signup").permitAll()
-                                                .requestMatchers("/admin/login").permitAll()
+                        // Auth
+                        .requestMatchers("/login", "/signup").permitAll()
+                        .requestMatchers("/admin/login").permitAll()
 
-                                                // Admin
-                                                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                        // Admin
+                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
 
-                                                // Employees
-                                                .requestMatchers(HttpMethod.GET, "/employees")
-                                                .hasAuthority("ROLE_ADMIN")
+                        // Employees
+                        .requestMatchers(HttpMethod.GET, "/employees")
+                        .hasAuthority("ROLE_ADMIN")
 
-                    .requestMatchers(HttpMethod.GET, "/employees/restaurant")
+                        .requestMatchers(HttpMethod.GET, "/employees/restaurant")
                         .hasAnyAuthority(
-                            "ROLE_ADMIN",
-                            "ROLE_OWNER",
-                            "ROLE_MANAGER",
-                            "ROLE_ASSISTANT_MANAGER",
-                            "ROLE_TEAM_LEADER",
-                            "ROLE_EMPLOYEE"
-                        )
+                                "ROLE_ADMIN",
+                                "ROLE_OWNER",
+                                "ROLE_MANAGER",
+                                "ROLE_ASSISTANT_MANAGER",
+                                "ROLE_TEAM_LEADER",
+                                "ROLE_EMPLOYEE")
 
-                                                .requestMatchers(HttpMethod.GET, "/employees/me")
-                                                .authenticated()
+                        .requestMatchers(HttpMethod.GET, "/employees/me")
+                        .authenticated()
 
-                                                .requestMatchers(HttpMethod.PUT, "/employees/me/password")
-                                                .authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/employees/me/password")
+                        .authenticated()
 
-                    .requestMatchers(HttpMethod.GET, "/employees/*")
+                        .requestMatchers(HttpMethod.GET, "/employees/*")
                         .hasAnyAuthority(
-                            "ROLE_ADMIN",
-                            "ROLE_OWNER",
-                            "ROLE_MANAGER",
-                            "ROLE_ASSISTANT_MANAGER",
-                            "ROLE_TEAM_LEADER"
-                        )
+                                "ROLE_ADMIN",
+                                "ROLE_OWNER",
+                                "ROLE_MANAGER",
+                                "ROLE_ASSISTANT_MANAGER",
+                                "ROLE_TEAM_LEADER")
 
-                                                .requestMatchers("/employees/create",
-                                                                "/employees/delete/**",
-                                                                "/employees/update/**")
-                                                .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER", "ROLE_ASSISTANT_MANAGER")
-
-                                                // Restaurant
-                                                .requestMatchers(HttpMethod.POST, "/restaurant")
-                                                .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
-
-                    .requestMatchers(HttpMethod.GET, "/restaurant/my")
-                        .hasAnyAuthority(
-                            "ROLE_ADMIN",
-                            "ROLE_OWNER",
-                            "ROLE_MANAGER",
-                            "ROLE_ASSISTANT_MANAGER",
-                            "ROLE_TEAM_LEADER",
-                            "ROLE_EMPLOYEE"
-                        )
-
-                                                .requestMatchers(HttpMethod.GET, "/restaurant/owner/**")
-                                                .hasAuthority("ROLE_ADMIN")
-
-                                                .requestMatchers(HttpMethod.GET, "/restaurant/**")
-                                                .hasAuthority("ROLE_ADMIN")
-
-                                                .requestMatchers(HttpMethod.PUT, "/restaurant/**")
-                                                .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
-
-                                                .requestMatchers(HttpMethod.DELETE, "/restaurant/**")
-                                                .hasAuthority("ROLE_ADMIN")
-
-                    // Shifts
-                    .requestMatchers(HttpMethod.PUT, "/employees/*/shift/*").hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER", "ROLE_ASSISTANT_MANAGER")
-                    
-                    .requestMatchers(HttpMethod.GET, "/shifts", "/shifts/**")
-                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER", "ROLE_ASSISTANT_MANAGER", "ROLE_TEAM_LEADER", "ROLE_EMPLOYEE")
-
-                    // Todas las demás operaciones de /shifts (POST, PUT, DELETE) requieren roles de gestión
-                    .requestMatchers("/shifts/delete/**", "/shifts/update/**", "/shifts")
+                        .requestMatchers("/employees/create",
+                                "/employees/delete/**",
+                                "/employees/update/**")
                         .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER", "ROLE_ASSISTANT_MANAGER")
 
-                                                .requestMatchers("/table-assignment/**").authenticated()
-                                                .requestMatchers("/tables/**").authenticated()
+                        // Restaurant
+                        .requestMatchers(HttpMethod.POST, "/restaurant")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
 
+                        .requestMatchers(HttpMethod.GET, "/restaurant/my")
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "ROLE_OWNER",
+                                "ROLE_MANAGER",
+                                "ROLE_ASSISTANT_MANAGER",
+                                "ROLE_TEAM_LEADER",
+                                "ROLE_EMPLOYEE")
 
-                                                .requestMatchers("/chat").hasAnyAuthority(
-                                                                "ROLE_EMPLOYEE",
-                                                                "ROLE_TEAM_LEADER",
-                                                                "ROLE_ASSISTANT_MANAGER",
-                                                                "ROLE_MANAGER",
-                                                                "ROLE_OWNER")
+                        .requestMatchers(HttpMethod.GET, "/restaurant/owner/**")
+                        .hasAuthority("ROLE_ADMIN")
 
-                                                .anyRequest().authenticated())
+                        .requestMatchers(HttpMethod.GET, "/restaurant/**")
+                        .hasAuthority("ROLE_ADMIN")
 
-                                .exceptionHandling(ex -> ex
-                                                .authenticationEntryPoint((req, res, authException) -> res
-                                                                .sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                                                                                "No autenticado"))
-                                                .accessDeniedHandler((req, res, accessDeniedException) -> res
-                                                                .sendError(HttpServletResponse.SC_FORBIDDEN,
-                                                                                "No tienes permisos")))
+                        .requestMatchers(HttpMethod.PUT, "/restaurant/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER")
 
-                                .addFilterBefore(jwtAuthenticationFilter,
-                                                UsernamePasswordAuthenticationFilter.class)
+                        .requestMatchers(HttpMethod.DELETE, "/restaurant/**")
+                        .hasAuthority("ROLE_ADMIN")
 
-                                .httpBasic(Customizer.withDefaults());
+                        // Shifts
+                        .requestMatchers(HttpMethod.PUT, "/employees/*/shift/*")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER", "ROLE_ASSISTANT_MANAGER")
 
-                return http.build();
-        }
+                        .requestMatchers(HttpMethod.GET, "/shifts", "/shifts/**")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER", "ROLE_ASSISTANT_MANAGER",
+                                "ROLE_TEAM_LEADER", "ROLE_EMPLOYEE")
 
-        // 👇 CONFIGURACIÓN CORS
-        @Bean
-        public CorsConfigurationSource corsConfigurationSource() {
+                        // Todas las demás operaciones de /shifts (POST, PUT, DELETE) requieren roles de
+                        // gestión
+                        .requestMatchers("/shifts/delete/**", "/shifts/update/**", "/shifts")
+                        .hasAnyAuthority("ROLE_ADMIN", "ROLE_OWNER", "ROLE_MANAGER", "ROLE_ASSISTANT_MANAGER")
 
-                CorsConfiguration configuration = new CorsConfiguration();
+                        .requestMatchers("/table-assignment/**").authenticated()
+                        .requestMatchers("/tables/**").authenticated()
 
-                configuration.setAllowedOrigins(List.of(
-                                "http://localhost:4200", // Angular local
-                                "https://tu-dominio.com" // Producción
-                ));
+                        .requestMatchers("/chat").hasAnyAuthority(
+                                "ROLE_EMPLOYEE",
+                                "ROLE_TEAM_LEADER",
+                                "ROLE_ASSISTANT_MANAGER",
+                                "ROLE_MANAGER",
+                                "ROLE_OWNER")
 
-                configuration.setAllowedMethods(List.of(
-                                "GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                        .anyRequest().authenticated())
 
-                configuration.setAllowedHeaders(List.of("*"));
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((req, res, authException) -> res
+                                .sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                                        "No autenticado"))
+                        .accessDeniedHandler((req, res, accessDeniedException) -> res
+                                .sendError(HttpServletResponse.SC_FORBIDDEN,
+                                        "No tienes permisos")))
 
-                configuration.setAllowCredentials(true);
+                .addFilterBefore(jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class)
 
-                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                .httpBasic(Customizer.withDefaults());
 
-                source.registerCorsConfiguration("/**", configuration);
+        return http.build();
+    }
 
-                return source;
-        }
+    // 👇 CONFIGURACIÓN CORS
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
 
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-                return new BCryptPasswordEncoder();
-        }
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:4200", // Angular local
+                "https://tu-dominio.com" // Producción
+        ));
+
+        configuration.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        configuration.setAllowedHeaders(List.of("*"));
+
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }
