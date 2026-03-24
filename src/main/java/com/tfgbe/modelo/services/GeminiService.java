@@ -3,6 +3,8 @@ package com.tfgbe.modelo.services;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -13,7 +15,16 @@ public class GeminiService {
     @Value("${gemini.api.key}")
     private String apiKey;
 
-    private static final String URL_BASE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
+    //PARA DEBUG DESCOMENTAR Y VER EL SI EL VALUE DE LA KEY ES CORRECTO
+// @PostConstruct
+// public void init() {
+//     System.out.println(">>> KEY longitud: " + apiKey.length());
+//     System.out.println(">>> KEY primer char code: " + (int) apiKey.charAt(0));
+//     System.out.println(">>> KEY último char code: " + (int) apiKey.charAt(apiKey.length() - 1));
+//     System.out.println(">>> KEY valor: [" + apiKey + "]");
+// }
+
+   private static final String URL_BASE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
 
     public String generarSQL(String pregunta) {
         String esquema = "Eres un asistente que genera consultas SQL para PostgreSQL.\n" +
@@ -67,22 +78,28 @@ public class GeminiService {
         return ejecutarLlamada(prompt);
     }
 
-    private String ejecutarLlamada(String texto) {
+   private String ejecutarLlamada(String texto) {
     try {
-        URI uri = URI.create(URL_BASE + apiKey);
+
+        String cleanKey = apiKey.trim();
+        String urlCompleta = URL_BASE + cleanKey;
+        URI uri = URI.create(urlCompleta);
+
         HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         conn.setDoOutput(true);
 
-        String textoEscapado = texto
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
-        String json = "{\"contents\":[{\"parts\":[{\"text\":\"" + textoEscapado + "\"}]}]}";
+        com.fasterxml.jackson.databind.node.ObjectNode root = mapper.createObjectNode();
+        com.fasterxml.jackson.databind.node.ArrayNode contents = root.putArray("contents");
+        com.fasterxml.jackson.databind.node.ObjectNode content = contents.addObject();
+        com.fasterxml.jackson.databind.node.ArrayNode parts = content.putArray("parts");
+        com.fasterxml.jackson.databind.node.ObjectNode part = parts.addObject();
+        part.put("text", texto); 
+
+        String json = mapper.writeValueAsString(root);
 
         try (OutputStream os = conn.getOutputStream()) {
             os.write(json.getBytes("UTF-8"));
@@ -91,6 +108,19 @@ public class GeminiService {
         int statusCode = conn.getResponseCode();
         if (statusCode == 429) {
             throw new RuntimeException("LIMITE_TOKENS");
+        }
+
+        // Si hay error, leer el error stream para ver el mensaje real
+        if (statusCode >= 400) {
+            StringBuilder errorResponse = new StringBuilder();
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(conn.getErrorStream(), "UTF-8"))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    errorResponse.append(line);
+                }
+            }
+            throw new RuntimeException("Error Gemini " + statusCode + ": " + errorResponse);
         }
 
         StringBuilder response = new StringBuilder();
@@ -102,22 +132,18 @@ public class GeminiService {
             }
         }
 
-        // Usar Jackson para parsear el JSON correctamente
-        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-        com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(response.toString());
-
-        com.fasterxml.jackson.databind.JsonNode candidates = root.get("candidates");
+        com.fasterxml.jackson.databind.JsonNode responseRoot = mapper.readTree(response.toString());
+        com.fasterxml.jackson.databind.JsonNode candidates = responseRoot.get("candidates");
         if (candidates == null || candidates.isEmpty())
             throw new RuntimeException("Sin candidates en la respuesta");
 
-        com.fasterxml.jackson.databind.JsonNode parts = candidates.get(0).get("content").get("parts");
-        if (parts == null || parts.isEmpty())
+        com.fasterxml.jackson.databind.JsonNode partsNode = candidates.get(0).get("content").get("parts");
+        if (partsNode == null || partsNode.isEmpty())
             throw new RuntimeException("Sin parts en la respuesta");
 
-        // Buscar la primera parte que tenga texto y no sea thought
-        for (com.fasterxml.jackson.databind.JsonNode part : parts) {
-            if (part.has("text")) {
-                return part.get("text").asText();
+        for (com.fasterxml.jackson.databind.JsonNode p : partsNode) {
+            if (p.has("text")) {
+                return p.get("text").asText();
             }
         }
 
